@@ -33,6 +33,9 @@ const userSchema = new Schema<IUser>(
       type: String,
       enum: ["male", "female"]
     },
+    isAdmin: { type: Boolean, 
+      default: false 
+    },
     followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
     following: [{ type: Schema.Types.ObjectId, ref: "User" }],
     bookmarks: [{ type: Schema.Types.ObjectId, ref: "Article" }],

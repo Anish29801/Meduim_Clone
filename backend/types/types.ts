@@ -9,6 +9,7 @@ export interface IUser extends Document {
   bio?: string;
   avatar?: string;
   gender?: "male" | "female" | "other";
+  isAdmin: boolean;
   followers: Types.ObjectId[];
   following: Types.ObjectId[];
   bookmarks: Types.ObjectId[];
