@@ -1,0 +1,32 @@
+# Node modules
+node_modules/
+
+# TypeScript output
+dist/
+
+# Environment variables
+.env
+
+# Prisma generated client
+.prisma/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/editor folders
+.vscode/
+.idea/
+
+# Optional: coverage for tests
+coverage/
+
+# Optional: temp files
+*.tmp
+*.swp
