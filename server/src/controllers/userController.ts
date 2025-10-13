@@ -1,12 +1,15 @@
 import { Request, Response } from "express";
 import prisma from "../prisma";
+import { createUser as registerUser, loginUser } from "../services/userService";
+
+// ===== CRUD Routes =====
 
 // GET all users
 export const getUsers = async (_req: Request, res: Response) => {
   try {
     const users = await prisma.user.findMany();
     res.json(users);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Failed to fetch users" });
   }
 };
@@ -23,18 +26,6 @@ export const getUser = async (req: Request, res: Response) => {
   }
 };
 
-// CREATE user
-export const createUser = async (req: Request, res: Response) => {
-  try {
-    const { username, email, password, fullName, bio, avatar, gender, isAdmin } = req.body;
-    const user = await prisma.user.create({
-      data: { username, email, password, fullName, bio, avatar, gender, isAdmin },
-    });
-    res.status(201).json(user);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-};
 
 // UPDATE user
 export const updateUser = async (req: Request, res: Response) => {
@@ -56,5 +47,29 @@ export const deleteUser = async (req: Request, res: Response) => {
     res.status(204).send();
   } catch {
     res.status(400).json({ error: "Failed to delete user" });
+  }
+};
+
+// ===== Auth Routes =====
+
+// Signup
+export const signup = async (req: Request, res: Response) => {
+  try {
+    const { username, email, password } = req.body;
+    const user = await registerUser(username, email, password);
+    res.status(201).json(user);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Login
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const result = await loginUser(email, password);
+    res.json(result);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
 };

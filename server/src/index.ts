@@ -10,13 +10,11 @@ const PORT = process.env.PORT || 5000;
 
 async function start() {
   try {
-    // Connect to MySQL
     await prisma.$connect();
     console.log("✅ MySQL Database Connected");
 
-    // Start Express server
     app.listen(PORT, () => {
-      console.log(`🌍 Server running at http://localhost:${PORT}`);
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
   } catch (err) {
     console.error("❌ Database Connection Error:", err);
