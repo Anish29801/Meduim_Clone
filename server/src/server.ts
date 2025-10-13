@@ -1,23 +1,21 @@
 import app from "./app";
+import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
-import prisma from "./config/db";
 
 dotenv.config();
+const prisma = new PrismaClient();
 
 const PORT = process.env.PORT || 5000;
 
-const startServer = async () => {
+async function start() {
   try {
     await prisma.$connect();
-    console.log("✅ Connected to PostgreSQL");
-
-    app.listen(PORT, () => {
-      console.log(`🌍 Server running on http://localhost:${PORT}`);
-    });
+    console.log("✅ MySQL Database Connected");
+    app.listen(PORT, () => console.log(`🌍 Server running at http://localhost:${PORT}`));
   } catch (err) {
-    console.error("❌ Database connection failed:", err);
+    console.error("❌ Database Connection Error:", err);
     process.exit(1);
   }
-};
+}
 
-startServer();
+start();
