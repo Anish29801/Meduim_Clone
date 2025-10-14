@@ -9,7 +9,8 @@ export const getUsers = async (_req: Request, res: Response) => {
   try {
     const users = await prisma.user.findMany();
     res.json(users);
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch users" });
   }
 };
@@ -18,24 +19,30 @@ export const getUsers = async (_req: Request, res: Response) => {
 export const getUser = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid user ID" });
+
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) return res.status(404).json({ error: "User not found" });
+
     res.json(user);
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch user" });
   }
 };
-
 
 // UPDATE user
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid user ID" });
+
     const data = req.body;
     const user = await prisma.user.update({ where: { id }, data });
     res.json(user);
-  } catch {
-    res.status(400).json({ error: "Failed to update user" });
+  } catch (err: any) {
+    console.error(err);
+    res.status(400).json({ error: err.message || "Failed to update user" });
   }
 };
 
@@ -43,10 +50,13 @@ export const updateUser = async (req: Request, res: Response) => {
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid user ID" });
+
     await prisma.user.delete({ where: { id } });
     res.status(204).send();
-  } catch {
-    res.status(400).json({ error: "Failed to delete user" });
+  } catch (err: any) {
+    console.error(err);
+    res.status(400).json({ error: err.message || "Failed to delete user" });
   }
 };
 
@@ -55,10 +65,10 @@ export const deleteUser = async (req: Request, res: Response) => {
 // Signup
 export const signup = async (req: Request, res: Response) => {
   try {
-    const { username, email, password } = req.body;
-    const user = await registerUser(username, email, password);
+    const user = await registerUser(req.body); // accepts object now
     res.status(201).json(user);
   } catch (err: any) {
+    console.error(err);
     res.status(400).json({ error: err.message });
   }
 };
@@ -67,9 +77,10 @@ export const signup = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    const result = await loginUser(email, password);
-    res.json(result);
+    const user = await loginUser(email, password);
+    res.json(user);
   } catch (err: any) {
+    console.error(err);
     res.status(400).json({ error: err.message });
   }
 };
