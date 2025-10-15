@@ -5,10 +5,15 @@ import prisma from "../prisma";
 export const getArticles = async (_req: Request, res: Response) => {
   try {
     const articles = await prisma.article.findMany({
-      include: { author: true, category: true },
+      include: {
+        author: true,
+        category: true,
+        tags: { select: { id: true, name: true } },
+      },
     });
     res.json(articles);
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch articles" });
   }
 };
@@ -19,11 +24,16 @@ export const getArticle = async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     const article = await prisma.article.findUnique({
       where: { id },
-      include: { author: true, category: true },
+      include: {
+        author: true,
+        category: true,
+        tags: { select: { id: true, name: true } },
+      },
     });
     if (!article) return res.status(404).json({ error: "Article not found" });
     res.json(article);
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch article" });
   }
 };
@@ -32,11 +42,29 @@ export const getArticle = async (req: Request, res: Response) => {
 export const createArticle = async (req: Request, res: Response) => {
   try {
     const { title, content, coverImage, tags, categoryId, authorId } = req.body;
+
     const article = await prisma.article.create({
-      data: { title, content, coverImage, tags, categoryId, authorId },
+      data: {
+        title,
+        content,
+        coverImage,
+        categoryId,
+        authorId,
+        tags: tags?.length
+          ? {
+              connectOrCreate: tags.map((tag: string) => ({
+                where: { name: tag },
+                create: { name: tag },
+              })),
+            }
+          : undefined,
+      },
+      include: { tags: { select: { id: true, name: true } } },
     });
+
     res.status(201).json(article);
   } catch (err: any) {
+    console.error(err);
     res.status(400).json({ error: err.message });
   }
 };
@@ -45,11 +73,32 @@ export const createArticle = async (req: Request, res: Response) => {
 export const updateArticle = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const data = req.body;
-    const article = await prisma.article.update({ where: { id }, data });
+    const { title, content, coverImage, tags, categoryId } = req.body;
+
+    const article = await prisma.article.update({
+      where: { id },
+      data: {
+        title,
+        content,
+        coverImage,
+        categoryId,
+        tags: tags?.length
+          ? {
+              set: [], // remove existing tags
+              connectOrCreate: tags.map((tag: string) => ({
+                where: { name: tag },
+                create: { name: tag },
+              })),
+            }
+          : undefined,
+      },
+      include: { tags: { select: { id: true, name: true } } },
+    });
+
     res.json(article);
-  } catch {
-    res.status(400).json({ error: "Failed to update article" });
+  } catch (err: any) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
   }
 };
 
@@ -59,7 +108,8 @@ export const deleteArticle = async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     await prisma.article.delete({ where: { id } });
     res.status(204).send();
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(400).json({ error: "Failed to delete article" });
   }
 };

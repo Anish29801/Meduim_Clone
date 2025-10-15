@@ -7,18 +7,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Enum definition for user roles
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
-  id       Int     @id @default(autoincrement())
-  username String  @unique
-  email    String  @unique
+  id       Int       @id @default(autoincrement())
+  username String    @unique @db.VarChar(255)
+  email    String    @unique @db.VarChar(255)
   password String
-  fullName String?
-  bio      String? @db.VarChar(200)
+  fullName String?   @db.VarChar(255)
+  bio      String?   @db.VarChar(200)
   avatar   String?
   gender   String?
-  isAdmin  Boolean @default(false)
+  role     Role      @default(USER)
 
-  bookmarks Article[] @relation("Bookmarks") // Many-to-many
+  // Relations
+  bookmarks Article[] @relation("Bookmarks")  // Many-to-many
   articles  Article[] @relation("UserArticles") // One-to-many authored articles
   comments  Comment[] // One-to-many comments
 
@@ -28,19 +35,20 @@ model User {
 
 model Article {
   id         Int       @id @default(autoincrement())
-  title      String
-  content    String
+  title      String    @db.VarChar(255)
+  content    String    @db.LongText
   coverImage String?
-  tags       Json? // Store tags as JSON for MySQL
   categoryId Int?
-  category   Category? @relation(fields: [categoryId], references: [id])
   claps      Int       @default(0)
   views      Int       @default(0)
 
+  // Relations
+  category     Category? @relation(fields: [categoryId], references: [id])
   authorId     Int
   author       User      @relation("UserArticles", fields: [authorId], references: [id])
   comments     Comment[]
   bookmarkedBy User[]    @relation("Bookmarks") // Many-to-many
+  tags         Tag[]     @relation("ArticleTags") // Many-to-many with tags
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -48,19 +56,28 @@ model Article {
 
 model Comment {
   id        Int      @id @default(autoincrement())
-  content   String
+  content   String   @db.LongText
   articleId Int
   userId    Int
   parentId  Int?
   likes     Int      @default(0)
   createdAt DateTime @default(now())
 
+  // Relations
   article Article @relation(fields: [articleId], references: [id])
   user    User    @relation(fields: [userId], references: [id])
+  parent  Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies Comment[] @relation("CommentReplies")
 }
 
 model Category {
   id       Int       @id @default(autoincrement())
-  name     String    @unique
-  articles Article[] // One-to-many relation
+  name     String    @unique @db.VarChar(255)
+  articles Article[]
+}
+
+model Tag {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique @db.VarChar(100)
+  articles Article[] @relation("ArticleTags") // Many-to-many with articles
 }
