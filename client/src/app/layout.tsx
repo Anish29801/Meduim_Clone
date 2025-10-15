@@ -1,20 +1,20 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Navbar from "./components/Navbar";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "Tagebuch",
-  description: "Blog your daily thoughts and activities",
+  title: 'Tagebuch',
+  description: 'Blog your daily thoughts and activities',
 };
 
 export default function RootLayout({
@@ -29,8 +29,7 @@ export default function RootLayout({
       >
         <div className="flex min-h-screen bg-white text-gray-900">
           <div className="flex-1 flex flex-col">
-            <Navbar />
-            <main className="p-6">{children}</main>
+            <main>{children}</main>
           </div>
         </div>
       </body>
