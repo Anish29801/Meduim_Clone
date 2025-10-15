@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import axios, { AxiosRequestConfig, AxiosError } from 'axios';
+import { useState, useCallback } from "react";
+import axios, { AxiosRequestConfig, AxiosError } from "axios";
 
 /**
  * Custom hook to handle API calls with built-in loading, error, and data states.
@@ -24,7 +24,7 @@ export function useApi<T = any>() {
         const message =
           axiosErr.response?.data?.message ||
           axiosErr.message ||
-          'Something went wrong';
+          "Something went wrong";
         setError(message);
         throw axiosErr; // Allow optional catch by caller
       } finally {
