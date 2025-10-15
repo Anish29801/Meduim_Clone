@@ -1,17 +1,18 @@
+// src/app.ts
 import express from 'express';
-import cors from 'cors';
-import userRouter from './routers/user';
+import userRoutes from './routes/userRoutes';
+import articleRoutes from './routes/articleRoutes';
+import commentRoutes from './routes/commentRoutes';
+import categoryRoutes from './routes/categoryRoutes';
 
 const app = express();
 
-// ===== Middleware =====
-app.use(cors());
 app.use(express.json());
 
-// ===== Test root route =====
-app.get('/', (req, res) => res.send('Server is alive! 🚀'));
-
-// ===== User routes =====
-app.use('/users', userRouter);
+// Register routes
+app.use('/api/users', userRoutes);
+app.use('/api/articles', articleRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/categories', categoryRoutes);
 
 export default app;
