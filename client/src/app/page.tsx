@@ -1,7 +1,10 @@
-import React from 'react';
+'use client';
+import { useState } from 'react';
 import Image from 'next/image';
+import JoinModal from './components/JoinModal';
 
 export default function Home() {
+  const [showModal, setShowModal] = useState(false);
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden bg-white">
       {/* ✅ Navigation */}
@@ -44,7 +47,10 @@ export default function Home() {
             </a>
 
             {/* Modern Gradient Button */}
-            <button className="relative inline-flex items-center justify-center px-4 py-1.5 rounded-full text-sm font-semibold text-white bg-black overflow-hidden group shadow-md hover:shadow-lg transition-all duration-300">
+            <button
+              onClick={() => setShowModal(true)}
+              className="relative inline-flex items-center justify-center px-4 py-1.5 rounded-full text-sm font-semibold text-white bg-black overflow-hidden group shadow-md hover:shadow-lg transition-all duration-300"
+            >
               {/* Gradient glow on hover */}
               <span className="absolute inset-0 bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 opacity-0 group-hover:opacity-50 rounded-full transition duration-300 blur-sm"></span>
 
@@ -53,6 +59,7 @@ export default function Home() {
 
               <span className="relative z-10">Get started</span>
             </button>
+            <JoinModal isOpen={showModal} onClose={() => setShowModal(false)} />
           </div>
         </div>
       </nav>
