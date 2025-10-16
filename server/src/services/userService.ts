@@ -4,7 +4,7 @@ import { CreateUserInput } from "../types/types";
 
 // ===== Create / Register User =====
 export const createUser = async (data: CreateUserInput) => {
-  const { username, email, password, fullName, bio, avatar, gender, isAdmin } = data;
+  const { username, email, password, fullName, bio, avatar, gender, role } = data;
 
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -23,7 +23,7 @@ export const createUser = async (data: CreateUserInput) => {
       bio,
       avatar,
       gender,
-      isAdmin: isAdmin || false,
+      role: role || "USER", // defaults to USER
     },
   });
 

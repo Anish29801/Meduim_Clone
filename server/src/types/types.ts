@@ -1,4 +1,4 @@
-export type CreateUserInput = {
+export interface CreateUserInput {
   username: string;
   email: string;
   password: string;
@@ -6,5 +6,5 @@ export type CreateUserInput = {
   bio?: string;
   avatar?: string;
   gender?: string;
-  isAdmin?: boolean;
-};
+  role?: "USER" | "ADMIN";
+}

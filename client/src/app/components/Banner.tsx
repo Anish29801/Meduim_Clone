@@ -37,12 +37,13 @@ export function Banner() {
         </motion.p>
 
         <motion.div
-          className="flex justify-center lg:justify-start"
+          className="flex justify-center lg:justify-start gap-4"
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.6, duration: 0.6 }}
           viewport={{ once: true }}
         >
+          {/* Start Reading Button */}
           <motion.button
             whileHover={{
               scale: 1.07,
@@ -55,7 +56,22 @@ export function Banner() {
             <span className="relative z-10">Start reading</span>
             <span className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/20 to-white/10 opacity-0 hover:opacity-30 rounded-full transition-opacity duration-300"></span>
           </motion.button>
+
+          {/* Start Writing Button */}
+          <motion.button
+            whileHover={{
+              scale: 1.07,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+            }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 200, damping: 12 }}
+            className="bg-white text-black px-6 py-2 rounded-full text-sm md:text-base font-semibold border border-black relative overflow-hidden"
+          >
+            <span className="relative z-10">Start writing</span>
+            <span className="absolute inset-0 bg-gradient-to-r from-black/10 via-black/20 to-black/10 opacity-0 hover:opacity-20 rounded-full transition-opacity duration-300"></span>
+          </motion.button>
         </motion.div>
+
       </motion.div>
 
       {/* ✅ Animated Right Image */}
