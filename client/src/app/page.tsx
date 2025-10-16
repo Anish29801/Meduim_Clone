@@ -4,7 +4,7 @@ import Image from 'next/image';
 import JoinModal from './components/JoinModal';
 
 export default function Home() {
-  const [showModal, setShowModal] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden bg-white">
       {/* ✅ Navigation */}
@@ -48,7 +48,7 @@ export default function Home() {
 
             {/* Modern Gradient Button */}
             <button
-              onClick={() => setShowModal(true)}
+              onClick={() => setIsModalOpen(true)}
               className="relative inline-flex items-center justify-center px-4 py-1.5 rounded-full text-sm font-semibold text-white bg-black overflow-hidden group shadow-md hover:shadow-lg transition-all duration-300"
             >
               {/* Gradient glow on hover */}
@@ -59,7 +59,10 @@ export default function Home() {
 
               <span className="relative z-10">Get started</span>
             </button>
-            <JoinModal isOpen={showModal} onClose={() => setShowModal(false)} />
+            <JoinModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+            />
           </div>
         </div>
       </nav>

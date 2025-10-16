@@ -1,1 +1,17 @@
 @import 'tailwindcss';
+@keyframes modalPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+    box-shadow: 0 0 0 rgba(0, 255, 128, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    box-shadow: 0 20px 60px rgba(0, 255, 128, 0.15);
+  }
+}
+
+.animate-modalPop {
+  animation: modalPop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
