@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    domains: ["miro.medium.com"], // ✅ allow Medium-hosted images
+  },
 };
 
 export default nextConfig;
