@@ -40,6 +40,21 @@ export default function Login({ onSubmit }: LoginProps) {
           {showPassword ? 'Hide' : 'Show'}
         </button>
       </div>
+      <div className="relative">
+        <input
+          type={showPassword ? 'text' : 'password'}
+          name="password"
+          placeholder="conform password"
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none"
+        />
+        <button
+          type="button"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+          onClick={() => setShowPassword(!showPassword)}
+        >
+          {showPassword ? 'Hide' : 'Show'}
+        </button>
+      </div>
       <button
         type="submit"
         className="w-full py-2.5 mt-2 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold hover:shadow-lg transition-all"

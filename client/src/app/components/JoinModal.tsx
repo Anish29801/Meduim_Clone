@@ -40,11 +40,21 @@ export default function JoinModal({ isOpen, onClose }: JoinModalProps) {
             transition={{ type: 'spring', stiffness: 200, damping: 20 }}
             className="fixed inset-0 flex items-center justify-center z-50"
           >
-            <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl p-6 w-[90%] max-w-md">
+            <div className="relative bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 w-[90%] max-w-md max-h-[90vh] overflow-y-auto">
+              {/* Close Button */}
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-700 text-2xl font-bold transition-colors"
+              >
+                &times;
+              </button>
+
+              {/* Modal Title */}
               <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
                 {isLogin ? 'Login' : 'Create Account'}
               </h2>
 
+              {/* Form */}
               {isLogin ? <Login /> : <SignUp />}
 
               {/* Divider */}
