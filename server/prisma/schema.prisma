@@ -19,6 +19,7 @@ model User {
   username  String    @db.VarChar(255) @unique
   email     String    @db.VarChar(255) @unique
   password  String
+  confirmpassword String
   fullName  String?   @db.MediumText
   bio       String?   @db.VarChar(200)
   avatar    String?
