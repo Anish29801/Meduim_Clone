@@ -2,7 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["miro.medium.com"], // ✅ allow Medium-hosted images
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "miro.medium.com",
+        pathname: "/**", // allow all paths from this domain
+      },
+    ],
   },
 };
 

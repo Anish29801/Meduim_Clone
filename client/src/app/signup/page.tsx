@@ -1,46 +1,57 @@
 'use client';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { SignUpProps } from '../type';
+import { useApi } from "../hooks/useApi";
 
 export default function SignUp({ onSubmit }: SignUpProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<'male' | 'female' | ''>('');
+  const { callApi, loading } = useApi();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
 
-    const username = (form.username as HTMLInputElement).value;
-    const fullName = (form.fullName as HTMLInputElement).value;
-    const email = (form.email as HTMLInputElement).value;
-    const password = (form.password as HTMLInputElement).value;
-    const confirmPassword = (form.confirmPassword as HTMLInputElement).value;
-    const bio = (form.bio as HTMLTextAreaElement).value;
+    const username = (form.elements.namedItem('username') as HTMLInputElement).value;
+    const fullName = (form.elements.namedItem('fullName') as HTMLInputElement).value;
+    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+    const password = (form.elements.namedItem('password') as HTMLInputElement).value;
+    const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value;
+    const bio = (form.elements.namedItem('bio') as HTMLTextAreaElement).value;
+    const role = (form.elements.namedItem('role') as HTMLSelectElement).value as 'USER' | 'ADMIN';
 
-    // Gender derived from avatar
-    const gender = selectedAvatar === 'male' ? 'Male' : selectedAvatar === 'female' ? 'Female' : '';
-
-    const role = (form.role as unknown as HTMLSelectElement).value as
-      | 'USER'
-      | 'ADMIN';
+    const gender =
+      selectedAvatar === 'male'
+        ? 'Male'
+        : selectedAvatar === 'female'
+        ? 'Female'
+        : '';
 
     if (!selectedAvatar) {
-      alert('Please select an avatar.');
+      toast.error('Please select an avatar.');
       return;
     }
 
-    if (onSubmit)
-      onSubmit(
-        username,
-        fullName,
-        email,
-        password,
-        confirmPassword,
-        bio,
-        selectedAvatar,
-        gender,
-        role
-      );
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match.');
+      return;
+    }
+
+    try {
+      const response = await callApi('http://localhost:5000/api/users/signup', {
+        method: 'POST',
+        data: { username, fullName, email, password, bio, gender, role, avatar: selectedAvatar },
+      });
+
+      toast.success('Signup successful! 🎉');
+      console.log('Response:', response);
+
+      if (onSubmit)
+        onSubmit(username, fullName, email, password, confirmPassword, bio, selectedAvatar, gender, role);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Signup failed. Try again.');
+    }
   };
 
   return (
@@ -113,21 +124,15 @@ export default function SignUp({ onSubmit }: SignUpProps) {
       <div>
         <p className="mb-2 font-medium text-gray-700">Choose Avatar</p>
         <div className="flex gap-4">
-          {/* Male */}
           <div
-            className={`cursor-pointer p-1 border rounded-full ${
-              selectedAvatar === 'male' ? 'border-indigo-500' : 'border-gray-300'
-            }`}
+            className={`cursor-pointer p-1 border rounded-full ${selectedAvatar === 'male' ? 'border-indigo-500' : 'border-gray-300'}`}
             onClick={() => setSelectedAvatar('male')}
           >
             <img src="/male.svg" alt="Male" className="w-12 h-12 rounded-full" />
           </div>
 
-          {/* Female */}
           <div
-            className={`cursor-pointer p-1 border rounded-full ${
-              selectedAvatar === 'female' ? 'border-indigo-500' : 'border-gray-300'
-            }`}
+            className={`cursor-pointer p-1 border rounded-full ${selectedAvatar === 'female' ? 'border-indigo-500' : 'border-gray-300'}`}
             onClick={() => setSelectedAvatar('female')}
           >
             <img src="/female.svg" alt="Female" className="w-12 h-12 rounded-full" />
@@ -149,9 +154,10 @@ export default function SignUp({ onSubmit }: SignUpProps) {
       {/* Submit */}
       <button
         type="submit"
+        disabled={loading}
         className="w-full py-2.5 mt-2 rounded-lg bg-gradient-to-r from-green-400 to-green-600 text-white font-semibold hover:shadow-lg transition-all"
       >
-        Sign Up
+        {loading ? 'Signing Up...' : 'Sign Up'}
       </button>
     </form>
   );
