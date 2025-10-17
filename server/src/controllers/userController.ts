@@ -54,39 +54,10 @@ export const deleteUser = async (req: Request, res: Response) => {
 // Signup
 export const signup = async (req: Request, res: Response) => {
   try {
-    const {
-      username,
-      fullName,
-      email,
-      password,
-      confirmPassword,
-      bio,
-      avatar,
-      gender,
-      role,
-    } = req.body;
-
-    if (!username || !email || !password || !confirmPassword) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({ error: 'Passwords do not match' });
-    }
-
-    const user = await registerUser({
-      username,
-      fullName,
-      email,
-      password,
-      bio,
-      avatar,
-      gender,
-      role,
-    });
-
+    const user = await registerUser(req.body); // accepts object now
     res.status(201).json(user);
   } catch (err: any) {
+    console.error(err);
     res.status(400).json({ error: err.message });
   }
 };
