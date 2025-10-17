@@ -2,12 +2,9 @@
 import { useState } from 'react';
 import { SignUpProps } from '../type';
 
-
 export default function SignUp({ onSubmit }: SignUpProps) {
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedAvatar, setSelectedAvatar] = useState<'male' | 'female' | ''>(
-    ''
-  );
+  const [selectedAvatar, setSelectedAvatar] = useState<'male' | 'female' | ''>('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,10 +16,18 @@ export default function SignUp({ onSubmit }: SignUpProps) {
     const password = (form.password as HTMLInputElement).value;
     const confirmPassword = (form.confirmPassword as HTMLInputElement).value;
     const bio = (form.bio as HTMLTextAreaElement).value;
-    const gender = (form.gender as HTMLSelectElement).value;
+
+    // Gender derived from avatar
+    const gender = selectedAvatar === 'male' ? 'Male' : selectedAvatar === 'female' ? 'Female' : '';
+
     const role = (form.role as unknown as HTMLSelectElement).value as
       | 'USER'
       | 'ADMIN';
+
+    if (!selectedAvatar) {
+      alert('Please select an avatar.');
+      return;
+    }
 
     if (onSubmit)
       onSubmit(
@@ -111,51 +116,24 @@ export default function SignUp({ onSubmit }: SignUpProps) {
           {/* Male */}
           <div
             className={`cursor-pointer p-1 border rounded-full ${
-              selectedAvatar === 'male'
-                ? 'border-indigo-500'
-                : 'border-gray-300'
+              selectedAvatar === 'male' ? 'border-indigo-500' : 'border-gray-300'
             }`}
             onClick={() => setSelectedAvatar('male')}
           >
-            <img
-              src="/male.svg"
-              alt="Male"
-              className="w-12 h-12 rounded-full"
-            />
+            <img src="/male.svg" alt="Male" className="w-12 h-12 rounded-full" />
           </div>
 
           {/* Female */}
           <div
             className={`cursor-pointer p-1 border rounded-full ${
-              selectedAvatar === 'female'
-                ? 'border-indigo-500'
-                : 'border-gray-300'
+              selectedAvatar === 'female' ? 'border-indigo-500' : 'border-gray-300'
             }`}
             onClick={() => setSelectedAvatar('female')}
           >
-            <img
-              src="/female.svg"
-              alt="Female"
-              className="w-12 h-12 rounded-full"
-            />
+            <img src="/female.svg" alt="Female" className="w-12 h-12 rounded-full" />
           </div>
         </div>
       </div>
-
-      {/* Gender */}
-      <select
-        name="gender"
-        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none"
-        defaultValue=""
-        required
-      >
-        <option value="" disabled>
-          Select Gender
-        </option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-      </select>
 
       {/* Role */}
       <select
@@ -166,7 +144,6 @@ export default function SignUp({ onSubmit }: SignUpProps) {
       >
         <option value="USER">User</option>
         <option value="ADMIN">Admin</option>
-        <option value="SUBADMIN">SubAdmin</option>
       </select>
 
       {/* Submit */}
