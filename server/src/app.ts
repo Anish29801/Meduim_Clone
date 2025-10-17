@@ -4,9 +4,11 @@ import userRoutes from "./routes/userRoutes";
 import articleRoutes from "./routes/articleRoutes";
 import commentRoutes from "./routes/commentRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
+import { applyCors } from "./middleware/cors";
 
 const app = express();
 
+app.use(applyCors);
 app.use(express.json());
 
 // Register routes

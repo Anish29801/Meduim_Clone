@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useApi } from '../hooks/useApi';
 import { SignUpProps } from '../type';
-import { useApi } from "../hooks/useApi";
 
 export default function SignUp({ onSubmit }: SignUpProps) {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,151 +13,66 @@ export default function SignUp({ onSubmit }: SignUpProps) {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
 
-    const username = (form.elements.namedItem('username') as HTMLInputElement).value;
-    const fullName = (form.elements.namedItem('fullName') as HTMLInputElement).value;
-    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
-    const password = (form.elements.namedItem('password') as HTMLInputElement).value;
-    const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value;
-    const bio = (form.elements.namedItem('bio') as HTMLTextAreaElement).value;
-    const role = (form.elements.namedItem('role') as HTMLSelectElement).value as 'USER' | 'ADMIN';
+    const username = (form.elements.namedItem("username") as HTMLInputElement).value;
+    const fullName = (form.elements.namedItem("fullName") as HTMLInputElement).value;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+    const confirmPassword = (form.elements.namedItem("confirmPassword") as HTMLInputElement).value;
+    const bio = (form.elements.namedItem("bio") as HTMLTextAreaElement).value;
+    const role = (form.elements.namedItem("role") as HTMLSelectElement).value as "USER" | "ADMIN";
 
-    const gender =
-      selectedAvatar === 'male'
-        ? 'Male'
-        : selectedAvatar === 'female'
-        ? 'Female'
-        : '';
+    const gender = selectedAvatar === 'male' ? 'Male' : selectedAvatar === 'female' ? 'Female' : '';
 
-    if (!selectedAvatar) {
-      toast.error('Please select an avatar.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast.error('Passwords do not match.');
-      return;
-    }
+    if (!selectedAvatar) return toast.error("Please select an avatar.");
+    if (password !== confirmPassword) return toast.error("Passwords do not match.");
 
     try {
-      const response = await callApi('http://localhost:5000/api/users/signup', {
-        method: 'POST',
-        data: { username, fullName, email, password, bio, gender, role, avatar: selectedAvatar },
+      const res = await callApi("http://localhost:5000/api/users/signup", {
+        method: "POST",
+        data: { username, fullName, email, password, bio, gender, role, avatar: selectedAvatar }
       });
-
-      toast.success('Signup successful! 🎉');
-      console.log('Response:', response);
-
-      if (onSubmit)
-        onSubmit(username, fullName, email, password, confirmPassword, bio, selectedAvatar, gender, role);
+      toast.success("Signup successful! 🎉");
+      if (onSubmit) onSubmit(username, fullName, email, password, confirmPassword, bio, selectedAvatar, gender, role);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Signup failed. Try again.');
+      toast.error(err.response?.data?.message || "Signup failed.");
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      {/* Username */}
-      <input
-        type="text"
-        name="username"
-        placeholder="Username"
-        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none"
-        required
-      />
-
-      {/* Full Name */}
-      <input
-        type="text"
-        name="fullName"
-        placeholder="Full Name"
-        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none"
-        required
-      />
-
-      {/* Email */}
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none"
-        required
-      />
-
-      {/* Password */}
+      <input type="text" name="username" placeholder="Username" className="w-full px-3 py-2 border rounded-lg" required />
+      <input type="text" name="fullName" placeholder="Full Name" className="w-full px-3 py-2 border rounded-lg" required />
+      <input type="email" name="email" placeholder="Email" className="w-full px-3 py-2 border rounded-lg" required />
       <div className="relative">
-        <input
-          type={showPassword ? 'text' : 'password'}
-          name="password"
-          placeholder="Password"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none"
-          required
-        />
-        <button
-          type="button"
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
-          onClick={() => setShowPassword(!showPassword)}
-        >
-          {showPassword ? 'Hide' : 'Show'}
+        <input type={showPassword ? "text" : "password"} name="password" placeholder="Password" className="w-full px-3 py-2 border rounded-lg" required />
+        <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500" onClick={() => setShowPassword(!showPassword)}>
+          {showPassword ? "Hide" : "Show"}
         </button>
       </div>
-
-      {/* Confirm Password */}
       <div className="relative">
-        <input
-          type={showPassword ? 'text' : 'password'}
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none"
-          required
-        />
+        <input type={showPassword ? "text" : "password"} name="confirmPassword" placeholder="Confirm Password" className="w-full px-3 py-2 border rounded-lg" required />
       </div>
-
-      {/* Bio */}
-      <textarea
-        name="bio"
-        placeholder="Bio"
-        rows={3}
-        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none resize-none"
-      />
-
-      {/* Avatar Selection */}
+      <textarea name="bio" placeholder="Bio" rows={3} className="w-full px-3 py-2 border rounded-lg" />
+      
       <div>
-        <p className="mb-2 font-medium text-gray-700">Choose Avatar</p>
+        <p>Choose Avatar:</p>
         <div className="flex gap-4">
-          <div
-            className={`cursor-pointer p-1 border rounded-full ${selectedAvatar === 'male' ? 'border-indigo-500' : 'border-gray-300'}`}
-            onClick={() => setSelectedAvatar('male')}
-          >
-            <img src="/male.svg" alt="Male" className="w-12 h-12 rounded-full" />
+          <div className={`cursor-pointer p-1 border rounded-full ${selectedAvatar==='male'?'border-indigo-500':'border-gray-300'}`} onClick={()=>setSelectedAvatar('male')}>
+            <img src="/male.svg" alt="Male" className="w-12 h-12 rounded-full"/>
           </div>
-
-          <div
-            className={`cursor-pointer p-1 border rounded-full ${selectedAvatar === 'female' ? 'border-indigo-500' : 'border-gray-300'}`}
-            onClick={() => setSelectedAvatar('female')}
-          >
-            <img src="/female.svg" alt="Female" className="w-12 h-12 rounded-full" />
+          <div className={`cursor-pointer p-1 border rounded-full ${selectedAvatar==='female'?'border-indigo-500':'border-gray-300'}`} onClick={()=>setSelectedAvatar('female')}>
+            <img src="/female.svg" alt="Female" className="w-12 h-12 rounded-full"/>
           </div>
         </div>
       </div>
 
-      {/* Role */}
-      <select
-        name="role"
-        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 outline-none"
-        defaultValue="USER"
-        required
-      >
+      <select name="role" defaultValue="USER" className="w-full px-3 py-2 border rounded-lg" required>
         <option value="USER">User</option>
         <option value="ADMIN">Admin</option>
       </select>
 
-      {/* Submit */}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-2.5 mt-2 rounded-lg bg-gradient-to-r from-green-400 to-green-600 text-white font-semibold hover:shadow-lg transition-all"
-      >
-        {loading ? 'Signing Up...' : 'Sign Up'}
+      <button type="submit" disabled={loading} className="w-full py-2.5 mt-2 rounded-lg bg-green-500 text-white">
+        {loading ? "Signing Up..." : "Sign Up"}
       </button>
     </form>
   );
