@@ -8,7 +8,6 @@ import {
   MenuButton,
   MenuItem,
   MenuItems,
-  Transition,
 } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -22,6 +21,7 @@ import male from "@/../public/male.svg";
 import Sidebar from "./Sidebar";
 import SignUp from "../signup/page";
 import Login from "../login/page";
+import UpdateUser from "../update/page"; // ✅ Import your update form
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -34,6 +34,7 @@ export default function Navbar() {
   // Modal state
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
+  const [showUpdate, setShowUpdate] = useState(false); // ✅ New modal
 
   // Handlers
   const handleLoginSubmit = (email: string, password: string) => {
@@ -66,6 +67,11 @@ export default function Navbar() {
     });
     setShowSignUp(false);
     setIsLoggedIn(true);
+  };
+
+  const handleUpdateSubmit = () => {
+    console.log("Profile updated");
+    setShowUpdate(false);
   };
 
   return (
@@ -139,7 +145,7 @@ export default function Navbar() {
                     <BellIcon className="h-6 w-6" />
                   </button>
 
-                  {/* Profile */}
+                  {/* Profile Menu */}
                   <Menu as="div" className="relative">
                     <MenuButton className="flex rounded-full focus:outline-none">
                       <Image
@@ -155,18 +161,19 @@ export default function Navbar() {
                       {["Your profile", "Settings", "Sign out"].map((item) => (
                         <MenuItem key={item}>
                           {({ focus }) => (
-                            <a
-                              href=""
+                            <button
+                              type="button"
                               className={classNames(
                                 focus ? "bg-gray-100" : "",
-                                "block px-4 py-2 text-sm text-gray-700"
+                                "block w-full text-left px-4 py-2 text-sm text-gray-700"
                               )}
                               onClick={() => {
+                                if (item === "Your profile") setShowUpdate(true);
                                 if (item === "Sign out") setIsLoggedIn(false);
                               }}
                             >
                               {item}
-                            </a>
+                            </button>
                           )}
                         </MenuItem>
                       ))}
@@ -209,6 +216,22 @@ export default function Navbar() {
             </button>
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Create an Account</h2>
             <SignUp onSubmit={handleSignUpSubmit} />
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      {/* ✅ UPDATE PROFILE MODAL */}
+      <Dialog open={showUpdate} onClose={() => setShowUpdate(false)} className="relative z-50">
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg relative">
+            <button
+              onClick={() => setShowUpdate(false)}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+            <UpdateUser userId="current-user-id" onUpdate={handleUpdateSubmit} />
           </Dialog.Panel>
         </div>
       </Dialog>
