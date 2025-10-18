@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Disclosure,
   Dialog,
@@ -18,10 +18,11 @@ import {
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import male from "@/../public/male.svg";
+import female from "@/../public/female.svg";
 import Sidebar from "./Sidebar";
 import SignUp from "../signup/page";
 import Login from "../login/page";
-import UpdateUser from "../update/page"; // ✅ Import your update form
+import UpdateUser from "../update/page";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -30,17 +31,32 @@ function classNames(...classes: string[]) {
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
 
   // Modal state
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
-  const [showUpdate, setShowUpdate] = useState(false); // ✅ New modal
+  const [showUpdate, setShowUpdate] = useState(false);
 
-  // Handlers
+  // Load user from localStorage
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const user = JSON.parse(userData);
+      setIsLoggedIn(true);
+      setUserAvatar(user.avatar); // "male" or "female"
+    }
+  }, []);
+
   const handleLoginSubmit = (email: string, password: string) => {
-    console.log("Login data:", { email, password });
     setShowLogin(false);
     setIsLoggedIn(true);
+
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const user = JSON.parse(userData);
+      setUserAvatar(user.avatar);
+    }
   };
 
   const handleSignUpSubmit = (
@@ -54,24 +70,23 @@ export default function Navbar() {
     gender: string,
     role: string
   ) => {
-    console.log("SignUp data:", {
-      username,
-      fullName,
-      email,
-      password,
-      confirmPassword,
-      bio,
-      avatar,
-      gender,
-      role,
-    });
     setShowSignUp(false);
     setIsLoggedIn(true);
+    setUserAvatar(avatar);
   };
 
   const handleUpdateSubmit = () => {
-    console.log("Profile updated");
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const user = JSON.parse(userData);
+      setUserAvatar(user.avatar);
+    }
     setShowUpdate(false);
+  };
+
+  const getAvatarImage = () => {
+    if (userAvatar === "female") return female;
+    return male; // default male
   };
 
   return (
@@ -149,7 +164,7 @@ export default function Navbar() {
                   <Menu as="div" className="relative">
                     <MenuButton className="flex rounded-full focus:outline-none">
                       <Image
-                        src={male}
+                        src={getAvatarImage()}
                         alt="User profile"
                         width={32}
                         height={32}
@@ -169,7 +184,10 @@ export default function Navbar() {
                               )}
                               onClick={() => {
                                 if (item === "Your profile") setShowUpdate(true);
-                                if (item === "Sign out") setIsLoggedIn(false);
+                                if (item === "Sign out") {
+                                  setIsLoggedIn(false);
+                                  localStorage.removeItem("user");
+                                }
                               }}
                             >
                               {item}
@@ -220,7 +238,7 @@ export default function Navbar() {
         </div>
       </Dialog>
 
-      {/* ✅ UPDATE PROFILE MODAL */}
+      {/* UPDATE PROFILE MODAL */}
       <Dialog open={showUpdate} onClose={() => setShowUpdate(false)} className="relative z-50">
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">

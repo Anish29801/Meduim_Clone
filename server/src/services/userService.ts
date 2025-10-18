@@ -10,10 +10,8 @@ export const createUser = async (data: CreateUserInput) => {
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) throw new Error("User already exists");
 
-  // Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Create user
   const user = await prisma.user.create({
     data: {
       username,
@@ -23,11 +21,13 @@ export const createUser = async (data: CreateUserInput) => {
       bio,
       avatar,
       gender,
-      role: role || "USER", // defaults to USER
+      role: role || "USER",
     },
   });
 
-  return user;
+  // Remove password before returning
+  const { password: _, ...safeUser } = user;
+  return safeUser;
 };
 
 // ===== Login User =====
@@ -38,5 +38,7 @@ export const loginUser = async (email: string, password: string) => {
   const isValid = await bcrypt.compare(password, user.password);
   if (!isValid) throw new Error("Invalid credentials");
 
-  return user;
+  // Remove password before returning
+  const { password: _, ...safeUser } = user;
+  return safeUser;
 };

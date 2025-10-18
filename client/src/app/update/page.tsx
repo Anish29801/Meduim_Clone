@@ -1,45 +1,63 @@
 "use client";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useApi } from "../hooks/useApi";
-
-interface UpdateUserProps {
-  userId: string;
-  onUpdate?: () => void;
-}
+import { UpdateUserProps, User } from "../type";
 
 export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
+  const [user, setUser] = useState<User | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<"male" | "female" | "">("");
   const [confirmKey, setConfirmKey] = useState("");
   const { callApi, loading } = useApi();
 
+  // ✅ Load user from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      const parsedUser = JSON.parse(stored);
+      setUser(parsedUser);
+      setSelectedAvatar(parsedUser.avatar === "male" ? "male" : "female");
+    }
+  }, []);
+
+  // ✅ Update user profile
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
+    if (!user) return toast.error("No user found. Please log in again.");
 
-    const username = (form.elements.namedItem("username") as HTMLInputElement).value;
-    const fullName = (form.elements.namedItem("fullName") as HTMLInputElement).value;
-    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const bio = (form.elements.namedItem("bio") as HTMLTextAreaElement).value;
-    const role = "USER"; // fixed role
-    const gender = selectedAvatar === "male" ? "Male" : selectedAvatar === "female" ? "Female" : "";
-
-    if (!selectedAvatar) return toast.error("Please select an avatar.");
-    if (confirmKey.trim() !== "root") return toast.error("Invalid confirmation password ❌");
+    if (confirmKey.trim() !== "root") {
+      return toast.error("Invalid confirmation password ❌");
+    }
 
     try {
-      await callApi(`http://localhost:5000/api/users/${userId}`, {
+      const updatedUser = await callApi(`http://localhost:5000/api/users/${user.id}`, {
         method: "PUT",
-        data: { username, fullName, email, bio, gender, role, avatar: selectedAvatar },
+        data: {
+          username: user.username,
+          fullName: user.fullName,
+          email: user.email,
+          bio: user.bio,
+          gender: user.gender,
+          role: user.role || "USER",
+          avatar: selectedAvatar,
+          updatePassword: confirmKey,
+        },
       });
 
+      // ✅ Refresh localStorage
+      localStorage.setItem("user", JSON.stringify(updatedUser));
       toast.success("User updated successfully ✅");
+
       if (onUpdate) onUpdate();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Update failed.");
+      toast.error(err.response?.data?.error || "Update failed.");
     }
   };
+
+  // If no user data
+  if (!user) return <p>Loading user info...</p>;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
@@ -50,6 +68,8 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
         name="username"
         placeholder="Username"
         className="w-full px-3 py-2 border rounded-lg"
+        value={user.username}
+        onChange={(e) => setUser({ ...user, username: e.target.value })}
         required
       />
       <input
@@ -57,6 +77,8 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
         name="fullName"
         placeholder="Full Name"
         className="w-full px-3 py-2 border rounded-lg"
+        value={user.fullName}
+        onChange={(e) => setUser({ ...user, fullName: e.target.value })}
         required
       />
       <input
@@ -64,6 +86,8 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
         name="email"
         placeholder="Email"
         className="w-full px-3 py-2 border rounded-lg"
+        value={user.email}
+        onChange={(e) => setUser({ ...user, email: e.target.value })}
         required
       />
       <textarea
@@ -71,6 +95,8 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
         placeholder="Bio"
         rows={3}
         className="w-full px-3 py-2 border rounded-lg"
+        value={user.bio || ""}
+        onChange={(e) => setUser({ ...user, bio: e.target.value })}
       />
 
       <div>
@@ -80,7 +106,10 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
             className={`cursor-pointer p-1 border rounded-full ${
               selectedAvatar === "male" ? "border-indigo-500" : "border-gray-300"
             }`}
-            onClick={() => setSelectedAvatar("male")}
+            onClick={() => {
+              setSelectedAvatar("male");
+              setUser({ ...user, gender: "Male", avatar: "male" });
+            }}
           >
             <img src="/male.svg" alt="Male" className="w-12 h-12 rounded-full" />
           </div>
@@ -88,7 +117,10 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
             className={`cursor-pointer p-1 border rounded-full ${
               selectedAvatar === "female" ? "border-indigo-500" : "border-gray-300"
             }`}
-            onClick={() => setSelectedAvatar("female")}
+            onClick={() => {
+              setSelectedAvatar("female");
+              setUser({ ...user, gender: "Female", avatar: "female" });
+            }}
           >
             <img src="/female.svg" alt="Female" className="w-12 h-12 rounded-full" />
           </div>

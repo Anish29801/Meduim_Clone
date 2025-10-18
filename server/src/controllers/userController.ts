@@ -39,7 +39,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
     const { fullName, bio, role, avatar, gender, password, updatePassword } = req.body;
 
-    // security check
+    // Security check
     if (updatePassword !== "root") {
       return res.status(403).json({ error: "Unauthorized: invalid update password" });
     }
@@ -75,7 +75,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 // Signup
 export const signup = async (req: Request, res: Response) => {
   try {
-    const user = await registerUser(req.body); // accepts object now
+    const user = await registerUser(req.body);
     res.status(201).json(user);
   } catch (err: any) {
     console.error(err);
@@ -88,9 +88,10 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const user = await loginUser(email, password);
-    res.json(user);
+    res.status(200).json(user);
   } catch (err: any) {
     console.error(err);
     res.status(400).json({ error: err.message });
   }
 };
+

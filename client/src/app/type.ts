@@ -16,3 +16,19 @@ export interface LoginProps {
   onSubmit?: (email: string, password: string, confirmPassword: string) => void;
   onGoogleLogin?: () => void;
 }
+
+export interface UpdateUserProps {
+  userId?: string;
+  onUpdate?: () => void;
+}
+
+export interface User {
+  id: number;
+  username: string;
+  fullName: string;
+  email: string;
+  bio?: string;
+  gender?: string;
+  avatar?: string;
+  role?: string;
+}
