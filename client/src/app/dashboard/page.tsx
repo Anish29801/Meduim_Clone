@@ -13,12 +13,13 @@ interface Post {
   comments: number;
   daysAgo: number;
   description: string;
+  image?: string;
+  content?: React.ReactNode;
 }
 
 export default function Dashboard() {
   const [posts, setPosts] = useState<Post[]>([]);
 
-  // Simulated dynamic data (replace later with API)
   useEffect(() => {
     const mockData: Post[] = [
       {

@@ -1,10 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 export default function PostCard({ post }: { post: any }) {
   return (
-    <div className="border-b border-gray-200 pb-5 hover:bg-gray-50 transition-colors rounded-lg p-3 cursor-pointer">
+    <Link
+      href={`/dashboard/${post.id}`}
+      className="block border-b border-gray-200 pb-5 hover:bg-gray-50 transition-colors rounded-lg p-3 cursor-pointer"
+    >
       <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
         <Image
           src={post.authorAvatar}
@@ -31,6 +35,6 @@ export default function PostCard({ post }: { post: any }) {
         <span>👁 {post.views}</span>
         <span>💬 {post.comments}</span>
       </div>
-    </div>
+    </Link>
   );
 }
