@@ -32,3 +32,16 @@ export interface User {
   avatar?: string;
   role?: string;
 }
+
+export interface Post {
+  id: number;
+  title: string;
+  author: string;
+  authorAvatar: string;
+  publication: string;
+  image: string;
+  views: number;
+  comments: number;
+  daysAgo: number;
+  description: string;
+}

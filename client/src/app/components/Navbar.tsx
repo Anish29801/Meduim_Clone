@@ -17,6 +17,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
+import { useRouter } from "next/navigation"; // ✅ for redirect
 import male from "@/../public/male.svg";
 import female from "@/../public/female.svg";
 import Sidebar from "./Sidebar";
@@ -29,11 +30,12 @@ function classNames(...classes: string[]) {
 }
 
 export default function Navbar() {
+  const router = useRouter(); // ✅ initialize router
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
 
-  // Modal state
+  // Modal states
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
@@ -46,9 +48,9 @@ export default function Navbar() {
       if (userData && userData !== "undefined" && userData !== "null") {
         const user = JSON.parse(userData);
         setIsLoggedIn(true);
-        setUserAvatar(user.avatar); // "male" or "female"
+        setUserAvatar(user.avatar);
       } else {
-        localStorage.removeItem("user"); // cleanup bad value
+        localStorage.removeItem("user");
       }
     } catch (error) {
       console.error("Invalid user data in localStorage:", error);
@@ -56,7 +58,7 @@ export default function Navbar() {
     }
   }, []);
 
-  // ✅ Handle login submission
+  // ✅ Login submit handler
   const handleLoginSubmit = (email: string, password: string) => {
     setShowLogin(false);
     setIsLoggedIn(true);
@@ -70,9 +72,11 @@ export default function Navbar() {
     } catch (error) {
       console.error("Failed to parse user after login:", error);
     }
+
+    router.push("/dashboard"); // ✅ redirect after login
   };
 
-  // ✅ Handle signup submission
+  // ✅ Signup submit handler
   const handleSignUpSubmit = (
     username: string,
     fullName: string,
@@ -88,12 +92,13 @@ export default function Navbar() {
     setIsLoggedIn(true);
     setUserAvatar(avatar);
 
-    // Store safely
     const newUser = { username, fullName, email, bio, avatar, gender, role };
     localStorage.setItem("user", JSON.stringify(newUser));
+
+    router.push("/dashboard"); // ✅ redirect after signup
   };
 
-  // ✅ Handle update profile
+  // ✅ Update handler
   const handleUpdateSubmit = () => {
     try {
       const userData = localStorage.getItem("user");
@@ -109,15 +114,13 @@ export default function Navbar() {
 
   const getAvatarImage = () => {
     if (userAvatar === "female") return female;
-    return male; // default male
+    return male;
   };
 
   return (
     <>
-      {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Navbar */}
       <Disclosure as="nav" className="bg-white border-b border-gray-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative flex h-16 items-center justify-between">
@@ -131,7 +134,7 @@ export default function Navbar() {
               </button>
 
               {/* Logo */}
-              <a href="#" className="flex items-center space-x-2">
+              <a href="/" className="flex items-center space-x-2">
                 <span className="font-serif text-xl font-semibold text-gray-900">
                   Tagebuch
                 </span>
@@ -150,7 +153,7 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* Right Section */}
+            {/* Right section */}
             <div className="flex items-center space-x-4">
               {!isLoggedIn ? (
                 <>
@@ -169,13 +172,14 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  {/* Write */}
-                  <button className="hidden sm:inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100">
+                  <button
+                    onClick={() => router.push("/dashboard")}
+                    className="hidden sm:inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100"
+                  >
                     <PencilSquareIcon className="h-5 w-5 mr-1" />
                     Write
                   </button>
 
-                  {/* Bell */}
                   <button
                     type="button"
                     className="relative rounded-full p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -210,6 +214,7 @@ export default function Navbar() {
                                 if (item === "Sign out") {
                                   setIsLoggedIn(false);
                                   localStorage.removeItem("user");
+                                  router.push("/"); // ✅ back to home on logout
                                 }
                               }}
                             >
