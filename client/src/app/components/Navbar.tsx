@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import {
-  Dialog,
   Disclosure,
+  Dialog,
   Menu,
   MenuButton,
   MenuItem,
@@ -31,7 +31,6 @@ function classNames(...classes: string[]) {
 
 export default function Navbar() {
   const router = useRouter();
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
@@ -43,25 +42,40 @@ export default function Navbar() {
 
   // Load user from localStorage
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      setIsLoggedIn(true);
-      setUserAvatar(user.avatar);
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData && userData !== 'undefined' && userData !== 'null') {
+        const user = JSON.parse(userData);
+        setIsLoggedIn(true);
+        setUserAvatar(user.avatar);
+      } else {
+        localStorage.removeItem('user');
+      }
+    } catch (error) {
+      console.error('Invalid user data in localStorage:', error);
+      localStorage.removeItem('user');
     }
   }, []);
 
+  // Login submit handler
   const handleLoginSubmit = (email: string, password: string) => {
     setShowLogin(false);
     setIsLoggedIn(true);
 
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      setUserAvatar(user.avatar);
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData && userData !== 'undefined' && userData !== 'null') {
+        const user = JSON.parse(userData);
+        setUserAvatar(user.avatar);
+      }
+    } catch (error) {
+      console.error('Failed to parse user after login:', error);
     }
+
+    router.push('/'); // Write page
   };
 
+  // Signup submit handler
   const handleSignUpSubmit = (
     username: string,
     fullName: string,
@@ -76,21 +90,28 @@ export default function Navbar() {
     setShowSignUp(false);
     setIsLoggedIn(true);
     setUserAvatar(avatar);
+
+    const newUser = { username, fullName, email, bio, avatar, gender, role };
+    localStorage.setItem('user', JSON.stringify(newUser));
+
+    router.push('/article'); // Write page
   };
 
+  // Update handler
   const handleUpdateSubmit = () => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      setUserAvatar(user.avatar);
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData && userData !== 'undefined' && userData !== 'null') {
+        const user = JSON.parse(userData);
+        setUserAvatar(user.avatar);
+      }
+    } catch (error) {
+      console.error('Failed to parse user after update:', error);
     }
     setShowUpdate(false);
   };
 
-  const getAvatarImage = () => {
-    if (userAvatar === 'female') return female;
-    return male; // default male
-  };
+  const getAvatarImage = () => (userAvatar === 'female' ? female : male);
 
   return (
     <>
@@ -111,7 +132,7 @@ export default function Navbar() {
               </button>
 
               {/* Logo */}
-              <a href="#" className="flex items-center space-x-2">
+              <a href="/" className="flex items-center space-x-2">
                 <span className="font-serif text-xl font-semibold text-gray-900">
                   Tagebuch
                 </span>
@@ -130,7 +151,7 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* Right Section */}
+            {/* Right section */}
             <div className="flex items-center space-x-4">
               {!isLoggedIn ? (
                 <>
@@ -149,7 +170,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  {/* Write button navigates to full-page editor */}
+                  {/* Write button */}
                   <button
                     onClick={() => router.push('/article')}
                     className="hidden sm:inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100"
@@ -194,6 +215,7 @@ export default function Navbar() {
                                 if (item === 'Sign out') {
                                   setIsLoggedIn(false);
                                   localStorage.removeItem('user');
+                                  router.push('/'); // back to home
                                 }
                               }}
                             >
@@ -212,79 +234,71 @@ export default function Navbar() {
       </Disclosure>
 
       {/* LOGIN MODAL */}
-      {showLogin && (
-        <Dialog
-          open={showLogin}
-          onClose={() => setShowLogin(false)}
-          className="relative z-50"
-        >
-          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg relative">
-              <button
-                onClick={() => setShowLogin(false)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-              >
-                <XMarkIcon className="w-5 h-5" />
-              </button>
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                Login
-              </h2>
-              <Login onSubmit={handleLoginSubmit} />
-            </Dialog.Panel>
-          </div>
-        </Dialog>
-      )}
+      <Dialog
+        open={showLogin}
+        onClose={() => setShowLogin(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg relative">
+            <button
+              onClick={() => setShowLogin(false)}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Login</h2>
+            <Login onSubmit={handleLoginSubmit} />
+          </Dialog.Panel>
+        </div>
+      </Dialog>
 
       {/* SIGNUP MODAL */}
-      {showSignUp && (
-        <Dialog
-          open={showSignUp}
-          onClose={() => setShowSignUp(false)}
-          className="relative z-50"
-        >
-          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg relative">
-              <button
-                onClick={() => setShowSignUp(false)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-              >
-                <XMarkIcon className="w-5 h-5" />
-              </button>
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                Create an Account
-              </h2>
-              <SignUp onSubmit={handleSignUpSubmit} />
-            </Dialog.Panel>
-          </div>
-        </Dialog>
-      )}
+      <Dialog
+        open={showSignUp}
+        onClose={() => setShowSignUp(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg relative">
+            <button
+              onClick={() => setShowSignUp(false)}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Create an Account
+            </h2>
+            <SignUp onSubmit={handleSignUpSubmit} />
+          </Dialog.Panel>
+        </div>
+      </Dialog>
 
       {/* UPDATE PROFILE MODAL */}
-      {showUpdate && (
-        <Dialog
-          open={showUpdate}
-          onClose={() => setShowUpdate(false)}
-          className="relative z-50"
-        >
-          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg relative">
-              <button
-                onClick={() => setShowUpdate(false)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-              >
-                <XMarkIcon className="w-5 h-5" />
-              </button>
-              <UpdateUser
-                userId="current-user-id"
-                onUpdate={handleUpdateSubmit}
-              />
-            </Dialog.Panel>
-          </div>
-        </Dialog>
-      )}
+      <Dialog
+        open={showUpdate}
+        onClose={() => setShowUpdate(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg relative">
+            <button
+              onClick={() => setShowUpdate(false)}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+            <UpdateUser
+              userId="current-user-id"
+              onUpdate={handleUpdateSubmit}
+            />
+          </Dialog.Panel>
+        </div>
+      </Dialog>
     </>
   );
 }

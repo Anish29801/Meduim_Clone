@@ -8,6 +8,8 @@ import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import Toolbar from './Toolbar';
 import { LexicalEditorProps } from '@/app/type';
+import { useEffect } from 'react';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 
 export default function LexicalEditor({
   initialContent = '',
@@ -19,12 +21,9 @@ export default function LexicalEditor({
     theme: {
       paragraph: 'mb-2 text-gray-800',
       heading: {
-        h1: 'font-bold text-3xl',
-        h2: 'font-bold text-2xl',
-        h3: 'font-bold text-xl',
-        h4: 'font-semibold text-lg',
-        h5: 'font-medium text-base',
-        h6: 'font-medium text-sm',
+        h1: 'font-bold text-3xl mb-2',
+        h2: 'font-bold text-2xl mb-2',
+        h3: 'font-bold text-xl mb-2',
       },
     },
     editable: !readOnly,
@@ -42,20 +41,41 @@ export default function LexicalEditor({
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <div className="border rounded-2xl shadow bg-white p-4">
-        {!readOnly && <Toolbar />}
-        <RichTextPlugin
-          contentEditable={
-            <ContentEditable className="min-h-[150px] outline-none" />
-          }
-          placeholder={
-            <div className="text-gray-400">Type your article...</div>
-          }
-          ErrorBoundary={LexicalErrorBoundary}
-        />
-        <HistoryPlugin />
-        <OnChangePlugin onChange={handleChange} />
-      </div>
+      <EditorContent
+        initialContent={initialContent}
+        handleChange={handleChange}
+        readOnly={readOnly}
+      />
     </LexicalComposer>
+  );
+}
+
+// Separate component to access editor instance
+function EditorContent({ initialContent, handleChange, readOnly }: any) {
+  const [editor] = useLexicalComposerContext();
+
+  // Prefill initial content
+  useEffect(() => {
+    if (initialContent && editor) {
+      editor.update(() => {
+        const json = JSON.parse(initialContent);
+        editor.setEditorState(editor.parseEditorState(json));
+      });
+    }
+  }, [initialContent, editor]);
+
+  return (
+    <div className="border rounded-2xl shadow bg-white p-4">
+      {!readOnly && <Toolbar />}
+      <RichTextPlugin
+        contentEditable={
+          <ContentEditable className="min-h-[150px] outline-none" />
+        }
+        placeholder={<div className="text-gray-400">Type your article...</div>}
+        ErrorBoundary={LexicalErrorBoundary}
+      />
+      <HistoryPlugin />
+      <OnChangePlugin onChange={handleChange} />
+    </div>
   );
 }
