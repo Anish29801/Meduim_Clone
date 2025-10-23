@@ -9,42 +9,47 @@ export default function SignUp({ onSubmit }: SignUpProps) {
   const [selectedAvatar, setSelectedAvatar] = useState<'male' | 'female' | ''>('');
   const { callApi, loading } = useApi();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
 
-    const username = (form.elements.namedItem('username') as HTMLInputElement).value;
-    const fullName = (form.elements.namedItem('fullName') as HTMLInputElement).value;
-    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
-    const password = (form.elements.namedItem('password') as HTMLInputElement).value;
-    const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value;
-    const bio = (form.elements.namedItem('bio') as HTMLTextAreaElement).value;
+    const form = e.currentTarget;
+    const username = (form.elements.namedItem('username') as HTMLInputElement).value.trim();
+    const fullName = (form.elements.namedItem('fullName') as HTMLInputElement).value.trim();
+    const email = (form.elements.namedItem('email') as HTMLInputElement).value.trim();
+    const password = (form.elements.namedItem('password') as HTMLInputElement).value.trim();
+    const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value.trim();
+    const bio = (form.elements.namedItem('bio') as HTMLTextAreaElement).value.trim();
     const role = (form.elements.namedItem('role') as HTMLSelectElement).value as 'USER' | 'ADMIN';
-
     const gender = selectedAvatar === 'male' ? 'Male' : selectedAvatar === 'female' ? 'Female' : '';
 
-    if (!selectedAvatar) return toast.error('Please select an avatar.');
-    if (password !== confirmPassword) return toast.error('Passwords do not match.');
+    if (!selectedAvatar) {
+      toast.error('Please select an avatar.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match.');
+      return;
+    }
 
     try {
-      const res = await callApi('http://localhost:5000/api/users/signup', {
+      // ✅ Use endpoint only — baseURL handled by useApi (http://localhost:8000)
+      const res = await callApi('/api/users/signup', {
         method: 'POST',
         data: { username, fullName, email, password, bio, gender, role, avatar: selectedAvatar },
       });
 
-      // ✅ Save user data in localStorage
-      if (res?.data) {
-        const { token, user } = res.data; // adjust if your API returns differently
-        localStorage.setItem('user', JSON.stringify(user));
-        if (token) localStorage.setItem('token', token);
-      }
+      // ✅ Store user & token if available
+      if (res?.token) localStorage.setItem('token', res.token);
+      if (res?.user) localStorage.setItem('user', JSON.stringify(res.user));
 
       toast.success('Signup successful! 🎉');
 
       if (onSubmit)
         onSubmit(username, fullName, email, password, confirmPassword, bio, selectedAvatar, gender, role);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Signup failed.');
+      console.error('Signup error:', err);
+      toast.error(err.response?.data?.message || 'Signup failed ❌');
     }
   };
 
@@ -54,21 +59,23 @@ export default function SignUp({ onSubmit }: SignUpProps) {
         type="text"
         name="username"
         placeholder="Username"
-        className="w-full px-3 py-2 border rounded-lg"
+        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400 outline-none"
         required
       />
+
       <input
         type="text"
         name="fullName"
         placeholder="Full Name"
-        className="w-full px-3 py-2 border rounded-lg"
+        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400 outline-none"
         required
       />
+
       <input
         type="email"
         name="email"
         placeholder="Email"
-        className="w-full px-3 py-2 border rounded-lg"
+        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400 outline-none"
         required
       />
 
@@ -78,7 +85,7 @@ export default function SignUp({ onSubmit }: SignUpProps) {
           type={showPassword ? 'text' : 'password'}
           name="password"
           placeholder="Password"
-          className="w-full px-3 py-2 border rounded-lg"
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400 outline-none"
           required
         />
         <button
@@ -96,7 +103,7 @@ export default function SignUp({ onSubmit }: SignUpProps) {
           type={showPassword ? 'text' : 'password'}
           name="confirmPassword"
           placeholder="Confirm Password"
-          className="w-full px-3 py-2 border rounded-lg"
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400 outline-none"
           required
         />
       </div>
@@ -106,16 +113,16 @@ export default function SignUp({ onSubmit }: SignUpProps) {
         name="bio"
         placeholder="Bio"
         rows={3}
-        className="w-full px-3 py-2 border rounded-lg"
+        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400 outline-none"
       />
 
-      {/* Avatar Selection */}
+      {/* Avatar */}
       <div>
-        <p>Choose Avatar:</p>
+        <p className="font-medium text-gray-700 mb-1">Choose Avatar:</p>
         <div className="flex gap-4">
           <div
             className={`cursor-pointer p-1 border rounded-full ${
-              selectedAvatar === 'male' ? 'border-indigo-500' : 'border-gray-300'
+              selectedAvatar === 'male' ? 'border-green-500' : 'border-gray-300'
             }`}
             onClick={() => setSelectedAvatar('male')}
           >
@@ -123,7 +130,7 @@ export default function SignUp({ onSubmit }: SignUpProps) {
           </div>
           <div
             className={`cursor-pointer p-1 border rounded-full ${
-              selectedAvatar === 'female' ? 'border-indigo-500' : 'border-gray-300'
+              selectedAvatar === 'female' ? 'border-green-500' : 'border-gray-300'
             }`}
             onClick={() => setSelectedAvatar('female')}
           >
@@ -133,16 +140,21 @@ export default function SignUp({ onSubmit }: SignUpProps) {
       </div>
 
       {/* Role */}
-      <select name="role" defaultValue="USER" className="w-full px-3 py-2 border rounded-lg" required>
+      <select
+        name="role"
+        defaultValue="USER"
+        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400 outline-none"
+        required
+      >
         <option value="USER">User</option>
         <option value="ADMIN">Admin</option>
       </select>
 
-      {/* Submit Button */}
+      {/* Submit */}
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2.5 mt-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition"
+        className="w-full py-2.5 mt-2 rounded-lg bg-gradient-to-r from-green-400 to-green-600 text-white font-semibold hover:shadow-lg transition-all disabled:opacity-70"
       >
         {loading ? 'Signing Up...' : 'Sign Up'}
       </button>
