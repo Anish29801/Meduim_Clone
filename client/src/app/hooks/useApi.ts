@@ -1,19 +1,28 @@
-// hooks/useApi.ts
+// src/app/hooks/useApi.ts
 import { useState, useCallback } from "react";
 import axios, { AxiosRequestConfig, AxiosError } from "axios";
 
-// ✅ Create Axios instance with base URL
+// ✅ Axios instance
 const axiosInstance = axios.create({
   baseURL: "http://localhost:5000",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-// ✅ Request interceptor – attach token if available
+// ✅ Request interceptor – attach token
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      // Cast headers to satisfy Axios 1.x + TS
+      (config.headers as Record<string, string>) = {
+        ...(config.headers as Record<string, string>),
+        Authorization: `Bearer ${token}`,
+      };
     }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -35,19 +44,34 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-// ✅ Custom Hook
+// ✅ Custom hook
 export function useApi<T = any>() {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const callApi = useCallback(
-    async (endpoint: string, config?: AxiosRequestConfig) => {
+    async (endpoint: string, config: AxiosRequestConfig = {}) => {
       setLoading(true);
       setError(null);
+
       try {
-        // 👇 Uses baseURL automatically
-        const response = await axiosInstance(endpoint, config);
+        if (!endpoint) throw new Error("Endpoint is required");
+
+        const normalizedEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+        console.log("[useApi] Request:", normalizedEndpoint, config.method || "GET");
+
+        // Ensure body is only sent for POST/PUT/PATCH
+        const method = (config.method || "GET").toUpperCase();
+        if (method === "POST" || method === "PUT" || method === "PATCH") {
+          config.data = config.data || {};
+        }
+
+        const response = await axiosInstance({
+          url: normalizedEndpoint,
+          ...config,
+        });
+
         setData(response.data);
         return response.data;
       } catch (err) {
@@ -57,6 +81,7 @@ export function useApi<T = any>() {
           axiosErr.message ||
           "Something went wrong";
         setError(message);
+        console.error("[useApi] Error:", message, axiosErr.response?.data);
         throw axiosErr;
       } finally {
         setLoading(false);

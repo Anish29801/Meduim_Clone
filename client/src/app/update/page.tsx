@@ -7,9 +7,7 @@ import { UpdateUserProps, User } from "../type";
 
 export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<"male" | "female" | "">("");
-  const [updateKey, setUpdateKey] = useState("");
   const { callApi, loading } = useApi();
 
   // ✅ Load user from localStorage or API
@@ -20,7 +18,6 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
       setUser(parsedUser);
       setSelectedAvatar(parsedUser.avatar || "");
     } else if (userId) {
-      // fallback: fetch from API if user not found in localStorage
       callApi(`/api/users/${userId}`)
         .then((data) => {
           setUser(data);
@@ -35,18 +32,18 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
     if (!user) return toast.error("No user found. Please log in again.");
 
     try {
+      const payload = {
+        fullName: user.fullName,
+        bio: user.bio,
+        role: user.role || "USER",
+        avatar: selectedAvatar,
+        gender: selectedAvatar === "male" ? "Male" : "Female",
+        updatePassword: "root", // must match backend
+      };
+
       const updatedUser = await callApi(`/api/users/${user.id}`, {
         method: "PUT",
-        data: {
-          username: user.username,
-          fullName: user.fullName,
-          email: user.email,
-          bio: user.bio,
-          gender: user.gender,
-          avatar: selectedAvatar,
-          role: user.role || "USER",
-          updateKey: updateKey.trim() || undefined,
-        },
+        data: payload,
       });
 
       localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -58,8 +55,8 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
     }
   };
 
-  // ✅ Show skeleton loader instead of text
   if (!user) {
+    // ✅ Skeleton loader
     return (
       <div className="animate-pulse space-y-3">
         <div className="h-6 bg-gray-200 rounded w-1/3" />
@@ -135,24 +132,8 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
         </div>
       </div>
 
-      {/* Optional update key */}
-      <div className="relative">
-        <input
-          type={showPassword ? "text" : "password"}
-          name="updateKey"
-          placeholder="Enter update key (optional)"
-          value={updateKey}
-          onChange={(e) => setUpdateKey(e.target.value)}
-          className="w-full px-3 py-2 border rounded-lg"
-        />
-        <button
-          type="button"
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
-          onClick={() => setShowPassword(!showPassword)}
-        >
-          {showPassword ? "Hide" : "Show"}
-        </button>
-      </div>
+      {/* Hidden updatePassword to satisfy backend */}
+      <input type="hidden" name="updatePassword" value="root" />
 
       <button
         type="submit"
