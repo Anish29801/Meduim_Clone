@@ -38,27 +38,41 @@ export default function Navbar() {
   const [showSignUp, setShowSignUp] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
 
-  // Load user from localStorage
+  // ✅ Load user from localStorage safely
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      const user = JSON.parse(userData);
-      setIsLoggedIn(true);
-      setUserAvatar(user.avatar); // "male" or "female"
+    try {
+      const userData = localStorage.getItem("user");
+
+      if (userData && userData !== "undefined" && userData !== "null") {
+        const user = JSON.parse(userData);
+        setIsLoggedIn(true);
+        setUserAvatar(user.avatar); // "male" or "female"
+      } else {
+        localStorage.removeItem("user"); // cleanup bad value
+      }
+    } catch (error) {
+      console.error("Invalid user data in localStorage:", error);
+      localStorage.removeItem("user");
     }
   }, []);
 
+  // ✅ Handle login submission
   const handleLoginSubmit = (email: string, password: string) => {
     setShowLogin(false);
     setIsLoggedIn(true);
 
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      const user = JSON.parse(userData);
-      setUserAvatar(user.avatar);
+    try {
+      const userData = localStorage.getItem("user");
+      if (userData && userData !== "undefined" && userData !== "null") {
+        const user = JSON.parse(userData);
+        setUserAvatar(user.avatar);
+      }
+    } catch (error) {
+      console.error("Failed to parse user after login:", error);
     }
   };
 
+  // ✅ Handle signup submission
   const handleSignUpSubmit = (
     username: string,
     fullName: string,
@@ -73,13 +87,22 @@ export default function Navbar() {
     setShowSignUp(false);
     setIsLoggedIn(true);
     setUserAvatar(avatar);
+
+    // Store safely
+    const newUser = { username, fullName, email, bio, avatar, gender, role };
+    localStorage.setItem("user", JSON.stringify(newUser));
   };
 
+  // ✅ Handle update profile
   const handleUpdateSubmit = () => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      const user = JSON.parse(userData);
-      setUserAvatar(user.avatar);
+    try {
+      const userData = localStorage.getItem("user");
+      if (userData && userData !== "undefined" && userData !== "null") {
+        const user = JSON.parse(userData);
+        setUserAvatar(user.avatar);
+      }
+    } catch (error) {
+      console.error("Failed to parse user after update:", error);
     }
     setShowUpdate(false);
   };
