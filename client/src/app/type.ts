@@ -32,3 +32,9 @@ export interface User {
   avatar?: string;
   role?: string;
 }
+
+export interface LexicalEditorProps {
+  initialContent?: string;
+  onChange?: (content: string) => void;
+  readOnly?: boolean;
+}

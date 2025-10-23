@@ -7,60 +7,69 @@ import { UpdateUserProps, User } from "../type";
 
 export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<"male" | "female" | "">("");
-  const [confirmKey, setConfirmKey] = useState("");
   const { callApi, loading } = useApi();
 
-  // ✅ Load user from localStorage on mount
+  // ✅ Load user from localStorage or API
   useEffect(() => {
     const stored = localStorage.getItem("user");
     if (stored) {
       const parsedUser = JSON.parse(stored);
       setUser(parsedUser);
-      setSelectedAvatar(parsedUser.avatar === "male" ? "male" : "female");
+      setSelectedAvatar(parsedUser.avatar || "");
+    } else if (userId) {
+      callApi(`/api/users/${userId}`)
+        .then((data) => {
+          setUser(data);
+          setSelectedAvatar(data.avatar || "");
+        })
+        .catch(() => toast.error("Failed to load user data ❌"));
     }
-  }, []);
+  }, [userId, callApi]);
 
-  // ✅ Update user profile
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return toast.error("No user found. Please log in again.");
 
-    if (confirmKey.trim() !== "root") {
-      return toast.error("Invalid confirmation password ❌");
-    }
-
     try {
-      const updatedUser = await callApi(`http://localhost:5000/api/users/${user.id}`, {
+      const payload = {
+        fullName: user.fullName,
+        bio: user.bio,
+        role: user.role || "USER",
+        avatar: selectedAvatar,
+        gender: selectedAvatar === "male" ? "Male" : "Female",
+        updatePassword: "root", // must match backend
+      };
+
+      const updatedUser = await callApi(`/api/users/${user.id}`, {
         method: "PUT",
-        data: {
-          username: user.username,
-          fullName: user.fullName,
-          email: user.email,
-          bio: user.bio,
-          gender: user.gender,
-          role: user.role || "USER",
-          avatar: selectedAvatar,
-          updatePassword: confirmKey,
-        },
+        data: payload,
       });
 
-      // ✅ Refresh localStorage
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      toast.success("User updated successfully ✅");
+      toast.success("Profile updated successfully ✅");
 
       if (onUpdate) onUpdate();
     } catch (err: any) {
-      toast.error(err.response?.data?.error || "Update failed.");
+      toast.error(err.response?.data?.error || "Update failed ❌");
     }
   };
 
-  // If no user data
-  if (!user) return <p>Loading user info...</p>;
+  if (!user) {
+    // ✅ Skeleton loader
+    return (
+      <div className="animate-pulse space-y-3">
+        <div className="h-6 bg-gray-200 rounded w-1/3" />
+        <div className="h-10 bg-gray-200 rounded" />
+        <div className="h-10 bg-gray-200 rounded" />
+        <div className="h-24 bg-gray-200 rounded" />
+        <div className="h-10 bg-gray-200 rounded" />
+      </div>
+    );
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-lg font-semibold text-gray-700">Update Profile</h2>
 
       <input
@@ -72,6 +81,7 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
         onChange={(e) => setUser({ ...user, username: e.target.value })}
         required
       />
+
       <input
         type="text"
         name="fullName"
@@ -81,6 +91,7 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
         onChange={(e) => setUser({ ...user, fullName: e.target.value })}
         required
       />
+
       <input
         type="email"
         name="email"
@@ -90,6 +101,7 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
         onChange={(e) => setUser({ ...user, email: e.target.value })}
         required
       />
+
       <textarea
         name="bio"
         placeholder="Bio"
@@ -99,58 +111,34 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
         onChange={(e) => setUser({ ...user, bio: e.target.value })}
       />
 
+      {/* Avatar selection */}
       <div>
-        <p>Choose Avatar:</p>
+        <p className="text-sm text-gray-600 mb-1">Choose Avatar:</p>
         <div className="flex gap-4">
-          <div
-            className={`cursor-pointer p-1 border rounded-full ${
-              selectedAvatar === "male" ? "border-indigo-500" : "border-gray-300"
-            }`}
-            onClick={() => {
-              setSelectedAvatar("male");
-              setUser({ ...user, gender: "Male", avatar: "male" });
-            }}
-          >
-            <img src="/male.svg" alt="Male" className="w-12 h-12 rounded-full" />
-          </div>
-          <div
-            className={`cursor-pointer p-1 border rounded-full ${
-              selectedAvatar === "female" ? "border-indigo-500" : "border-gray-300"
-            }`}
-            onClick={() => {
-              setSelectedAvatar("female");
-              setUser({ ...user, gender: "Female", avatar: "female" });
-            }}
-          >
-            <img src="/female.svg" alt="Female" className="w-12 h-12 rounded-full" />
-          </div>
+          {["male", "female"].map((type) => (
+            <div
+              key={type}
+              className={`cursor-pointer p-1 border rounded-full ${
+                selectedAvatar === type ? "border-indigo-500" : "border-gray-300"
+              }`}
+              onClick={() => {
+                setSelectedAvatar(type as "male" | "female");
+                setUser({ ...user, gender: type, avatar: type });
+              }}
+            >
+              <img src={`/${type}.svg`} alt={type} className="w-12 h-12 rounded-full" />
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Confirmation password */}
-      <div className="relative">
-        <input
-          type={showPassword ? "text" : "password"}
-          name="confirmKey"
-          placeholder="Enter confirmation password"
-          value={confirmKey}
-          onChange={(e) => setConfirmKey(e.target.value)}
-          className="w-full px-3 py-2 border rounded-lg"
-          required
-        />
-        <button
-          type="button"
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
-          onClick={() => setShowPassword(!showPassword)}
-        >
-          {showPassword ? "Hide" : "Show"}
-        </button>
-      </div>
+      {/* Hidden updatePassword to satisfy backend */}
+      <input type="hidden" name="updatePassword" value="root" />
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2.5 mt-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
+        className="w-full py-2.5 mt-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition-all"
       >
         {loading ? "Updating..." : "Update Profile"}
       </button>
