@@ -1,7 +1,9 @@
+'use client';
+
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { FORMAT_TEXT_COMMAND, TextFormatType } from 'lexical';
 
-export default function Toolbar() {
+export default function Toolbox() {
   const [editor] = useLexicalComposerContext();
 
   const applyFormat = (format: TextFormatType) => {
@@ -21,12 +23,6 @@ export default function Toolbar() {
         className="px-2 py-1 bg-gray-200 rounded"
       >
         I
-      </button>
-      <button
-        onClick={() => applyFormat('underline')}
-        className="px-2 py-1 bg-gray-200 rounded"
-      >
-        U
       </button>
     </div>
   );
