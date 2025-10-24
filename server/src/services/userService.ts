@@ -42,3 +42,5 @@ export const loginUser = async (email: string, password: string) => {
   const { password: _, ...safeUser } = user;
   return safeUser;
 };
+
+

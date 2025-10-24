@@ -33,6 +33,15 @@ export interface User {
   role?: string;
 }
 
+export interface ArticlePageProps {
+  articleId?: number;
+}
+
+export interface LexicalEditorProps {
+  initialContent?: string;
+  onChange?: (val: string) => void;
+  readOnly?: boolean;
+}
 export interface Post {
   id: number;
   title: string;
