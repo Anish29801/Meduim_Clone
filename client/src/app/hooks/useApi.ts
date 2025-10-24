@@ -1,6 +1,7 @@
 // src/app/hooks/useApi.ts
 import { useState, useCallback } from 'react';
 import axios, { AxiosRequestConfig, AxiosError } from 'axios';
+import toast from 'react-hot-toast';
 
 // ✅ Axios instance
 const axiosInstance = axios.create({
@@ -46,6 +47,7 @@ axiosInstance.interceptors.response.use(
 );
 
 // ✅ Custom hook
+
 export function useApi<T = any>() {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -65,12 +67,12 @@ export function useApi<T = any>() {
         console.log(
           '[useApi] Request:',
           normalizedEndpoint,
-          config.method || 'GET'
+          config.method?.toUpperCase() || 'GET'
         );
 
         // Ensure body is only sent for POST/PUT/PATCH
         const method = (config.method || 'GET').toUpperCase();
-        if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
+        if (['POST', 'PUT', 'PATCH'].includes(method)) {
           config.data = config.data || {};
         }
 
@@ -82,13 +84,28 @@ export function useApi<T = any>() {
         setData(response.data);
         return response.data;
       } catch (err) {
-        const axiosErr = err as AxiosError<{ message?: string }>;
-        const message =
-          axiosErr.response?.data?.message ||
-          axiosErr.message ||
-          'Something went wrong';
+        const axiosErr = err as AxiosError<unknown>;
+        let message = axiosErr.message || 'Something went wrong';
+
+        // Try to get server message
+        if (axiosErr.response) {
+          const respData = axiosErr.response.data as any;
+          if (respData?.message) message = respData.message;
+
+          // ✅ Pretty console log
+          console.error(
+            '[useApi] Server Error:',
+            message,
+            typeof respData === 'object'
+              ? JSON.stringify(respData, null, 2)
+              : respData
+          );
+        } else {
+          console.error('[useApi] Network/Error:', message);
+        }
+
         setError(message);
-        console.error('[useApi] Error:', message, axiosErr.response?.data);
+        toast.error(message); // show user-friendly toast
         throw axiosErr;
       } finally {
         setLoading(false);

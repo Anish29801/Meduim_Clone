@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
-import prisma from "../prisma";
+import { Request, Response } from 'express';
+import prisma from '../prisma';
+import { createArticleService } from '../services/articleService';
 
 // GET all articles
 export const getArticles = async (_req: Request, res: Response) => {
@@ -14,7 +15,7 @@ export const getArticles = async (_req: Request, res: Response) => {
     res.json(articles);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch articles" });
+    res.status(500).json({ error: 'Failed to fetch articles' });
   }
 };
 
@@ -30,39 +31,19 @@ export const getArticle = async (req: Request, res: Response) => {
         tags: { select: { id: true, name: true } },
       },
     });
-    if (!article) return res.status(404).json({ error: "Article not found" });
+    if (!article) return res.status(404).json({ error: 'Article not found' });
     res.json(article);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch article" });
+    res.status(500).json({ error: 'Failed to fetch article' });
   }
 };
 
 // CREATE article
 export const createArticle = async (req: Request, res: Response) => {
   try {
-    const { title, content, coverImage, tags, categoryId, authorId } = req.body;
-
-    const article = await prisma.article.create({
-      data: {
-        title,
-        content,
-        coverImage,
-        categoryId,
-        authorId,
-        tags: tags?.length
-          ? {
-              connectOrCreate: tags.map((tag: string) => ({
-                where: { name: tag },
-                create: { name: tag },
-              })),
-            }
-          : undefined,
-      },
-      include: { tags: { select: { id: true, name: true } } },
-    });
-
-    res.status(201).json(article);
+    const article = await createArticleService(req.body);
+    res.json(article);
   } catch (err: any) {
     console.error(err);
     res.status(400).json({ error: err.message });
@@ -110,6 +91,6 @@ export const deleteArticle = async (req: Request, res: Response) => {
     res.status(204).send();
   } catch (err) {
     console.error(err);
-    res.status(400).json({ error: "Failed to delete article" });
+    res.status(400).json({ error: 'Failed to delete article' });
   }
 };
