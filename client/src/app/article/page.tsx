@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import LexicalEditor from '@/app/components/lecxicaleditor';
 import { useApi } from '@/app/hooks/useApi';
 import toast, { Toaster } from 'react-hot-toast';
-import { ArticlePageProps } from '../type';
+import type { ArticlePageProps } from '../type';
 
 export default function ArticlePage({ articleId }: ArticlePageProps) {
   const [id, setId] = useState<number | null>(articleId || null);
@@ -20,46 +20,33 @@ export default function ArticlePage({ articleId }: ArticlePageProps) {
 
   const { callApi } = useApi();
 
+  // Fetch categories
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await callApi('/api/categories');
-        setCategories(data || []);
-      } catch (err) {
-        console.error(err);
-        toast.error('Failed to fetch categories');
-      }
-    };
-    fetchCategories();
+    callApi('/api/categories')
+      .then((data) => setCategories(data || []))
+      .catch(() => toast.error('Failed to fetch categories'));
   }, [callApi]);
 
+  // Fetch article if editing
   useEffect(() => {
     if (!id) return;
-    const fetchArticle = async () => {
-      try {
-        const data = await callApi(`/api/articles/${id}`);
+    callApi(`/api/articles/${id}`)
+      .then((data) => {
         setTitle(data.title || '');
         setContent(data.content || '');
         setCoverImage(data.coverImage || '');
         setCategoryId(data.categoryId ?? null);
         setTags(data.tags?.map((t: any) => t.name) || []);
-      } catch (err) {
-        console.error(err);
-        toast.error('Failed to fetch article');
-      }
-    };
-    fetchArticle();
+      })
+      .catch(() => toast.error('Failed to fetch article'));
   }, [id, callApi]);
 
-  const handleAddTag = (tag: string) => {
+  const addTag = (tag: string) => {
     const t = tag.trim();
-    if (!t) return;
-    if (!tags.includes(t)) setTags((s) => [...s, t]);
+    if (t && !tags.includes(t)) setTags([...tags, t]);
   };
 
-  const handleRemoveTag = (tag: string) => {
-    setTags((s) => s.filter((t) => t !== tag));
-  };
+  const removeTag = (tag: string) => setTags(tags.filter((t) => t !== tag));
 
   const handleSave = async () => {
     if (!title.trim()) return toast.error('Title is required!');
@@ -79,8 +66,7 @@ export default function ArticlePage({ articleId }: ArticlePageProps) {
       });
       toast.success('Article saved successfully!');
       if (!id && data?.id) setId(data.id);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Failed to save article');
     } finally {
       setIsSaving(false);
@@ -88,53 +74,45 @@ export default function ArticlePage({ articleId }: ArticlePageProps) {
   };
 
   return (
-    <main className="p-6 max-w-3xl mx-auto space-y-6">
-      <Toaster position="top-right" /> {/*Add Toaster container */}
-      <header className="mb-2">
-        <h1 className="text-4xl font-bold text-gray-900">
-          {id ? '✏️ Edit Article' : '📝 Create Article'}
-        </h1>
-        <p className="text-gray-500 mt-1">
-          {id
-            ? 'Update your article and click Save.'
-            : 'Write a new story and save it.'}
-        </p>
-      </header>
-      {/* Title */}
+    <main className="p-6 max-w-3xl mx-auto space-y-4">
+      <Toaster position="top-right" />
+
+      <h1 className="text-3xl font-bold">
+        {id ? '✏️ Edit Article' : '📝 Create Article'}
+      </h1>
+
       <input
         type="text"
-        placeholder="Article title..."
+        placeholder="Title..."
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none text-lg font-medium"
+        className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-900"
       />
-      {/* Cover Image */}
-      <div className="space-y-2">
-        <input
-          type="text"
-          placeholder="Cover image URL (optional)"
-          value={coverImage}
-          onChange={(e) => setCoverImage(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none"
+
+      <input
+        type="text"
+        placeholder="Cover image URL..."
+        value={coverImage}
+        onChange={(e) => setCoverImage(e.target.value)}
+        className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-900"
+      />
+      {coverImage && (
+        <img
+          src={coverImage}
+          alt="cover"
+          className="w-full max-h-64 rounded shadow object-cover"
+          onError={(e) =>
+            ((e.target as HTMLImageElement).style.display = 'none')
+          }
         />
-        {coverImage && (
-          <img
-            src={coverImage}
-            alt="cover"
-            className="w-full rounded-xl shadow object-cover max-h-[320px]"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        )}
-      </div>
-      {/* Category */}
+      )}
+
       <select
         value={categoryId ?? ''}
         onChange={(e) =>
           setCategoryId(e.target.value ? Number(e.target.value) : null)
         }
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none"
+        className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-900"
       >
         <option value="">Select category</option>
         {categories.map((c) => (
@@ -143,57 +121,48 @@ export default function ArticlePage({ articleId }: ArticlePageProps) {
           </option>
         ))}
       </select>
-      {/* Tags */}
-      <div>
-        <input
-          type="text"
-          placeholder="Add tag and press Enter"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              handleAddTag((e.target as HTMLInputElement).value);
-              (e.target as HTMLInputElement).value = '';
-            }
-          }}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:outline-none"
-        />
-        <div className="flex flex-wrap gap-2 mt-3">
-          {tags.map((t) => (
-            <span
-              key={t}
-              className="bg-gray-100 px-3 py-1 rounded-full flex items-center gap-2 text-sm border"
-            >
-              <span>#{t}</span>
-              <button
-                onClick={() => handleRemoveTag(t)}
-                className="text-red-500 hover:text-red-700"
-                aria-label={`remove ${t}`}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
+
+      <input
+        type="text"
+        placeholder="Add tag and press Enter"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            addTag((e.target as HTMLInputElement).value);
+            (e.target as HTMLInputElement).value = '';
+          }
+        }}
+        className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-900"
+      />
+      <div className="flex flex-wrap gap-2 mt-2">
+        {tags.map((t) => (
+          <span
+            key={t}
+            className="bg-gray-200 px-2 py-1 rounded-full flex items-center gap-1 text-sm"
+          >
+            {t}
+            <button onClick={() => removeTag(t)} className="text-red-500">
+              ×
+            </button>
+          </span>
+        ))}
       </div>
-      {/* Editor */}
-      <div className="rounded-xl border border-gray-200 shadow-sm p-2 bg-white">
+
+      <div className="border rounded p-2 bg-white">
         <LexicalEditor initialContent={content} onChange={setContent} />
       </div>
-      {/* Controls */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-500">
-          {isSaving ? 'Saving...' : 'Autosave off • Click Save to persist'}
-        </div>
 
-        <div>
-          <button
-            onClick={handleSave}
-            className="px-6 py-2 bg-gray-900 text-white rounded-full font-semibold hover:scale-105 transition-transform duration-150 shadow"
-            disabled={isSaving}
-          >
-            {isSaving ? 'Saving…' : '💾 Save Article'}
-          </button>
-        </div>
+      <div className="flex justify-between items-center mt-2">
+        <span className="text-sm text-gray-500">
+          {isSaving ? 'Saving...' : 'Click Save to persist'}
+        </span>
+        <button
+          onClick={handleSave}
+          className="px-4 py-2 bg-gray-900 text-white rounded hover:scale-105 transition"
+          disabled={isSaving}
+        >
+          {isSaving ? 'Saving…' : '💾 Save'}
+        </button>
       </div>
     </main>
   );
