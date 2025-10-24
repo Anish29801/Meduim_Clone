@@ -112,7 +112,7 @@ export default function ArticleForm() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white rounded-2xl shadow-lg space-y-6">
+    <div className="max-w-4xl mx-auto p-8 bg-white rounded-3xl shadow-xl space-y-8">
       <Toaster position="top-right" />
 
       {/* Title */}
@@ -121,7 +121,7 @@ export default function ArticleForm() {
         placeholder="Article Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-indigo-500"
+        className="w-full px-6 py-4 text-2xl font-semibold border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
       />
 
       {/* Category */}
@@ -131,7 +131,7 @@ export default function ArticleForm() {
           onChange={(e) =>
             setCategoryId(e.target.value ? Number(e.target.value) : null)
           }
-          className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 transition-all duration-300 appearance-none bg-white text-gray-700 font-medium cursor-pointer"
+          className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 appearance-none bg-white text-gray-700 font-medium cursor-pointer"
         >
           <option value="">Select a category</option>
           {categories.map((c) => (
@@ -140,7 +140,7 @@ export default function ArticleForm() {
             </option>
           ))}
         </select>
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-indigo-500">
+        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-indigo-500">
           <svg
             className="w-5 h-5"
             fill="none"
@@ -159,7 +159,7 @@ export default function ArticleForm() {
 
       {/* Cover Image Drag & Drop */}
       <div
-        className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-indigo-500 relative"
+        className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer hover:border-indigo-500 transition-all duration-300 relative flex flex-col items-center justify-center"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onClick={() => fileInputRef.current?.click()}
@@ -169,7 +169,7 @@ export default function ArticleForm() {
             <img
               src={coverImageBase64}
               alt="Cover"
-              className="mx-auto h-40 object-contain rounded-xl"
+              className="mx-auto h-52 object-contain rounded-2xl shadow-lg"
             />
             <button
               type="button"
@@ -177,13 +177,15 @@ export default function ArticleForm() {
                 e.stopPropagation();
                 removeCoverImage();
               }}
-              className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+              className="absolute top-3 right-3 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 shadow-md"
             >
               ×
             </button>
           </div>
         ) : (
-          'Drag & drop or click to upload cover image'
+          <p className="text-gray-400 font-medium">
+            Drag & drop or click to upload cover image
+          </p>
         )}
         <input
           type="file"
@@ -195,11 +197,11 @@ export default function ArticleForm() {
       </div>
 
       {/* Tags */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-3">
         {tags.map((tag) => (
           <div
             key={tag}
-            className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full flex items-center gap-2"
+            className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full flex items-center gap-2 shadow-sm"
           >
             {tag}
             <button type="button" onClick={() => handleRemoveTag(tag)}>
@@ -208,19 +210,19 @@ export default function ArticleForm() {
           </div>
         ))}
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-3">
         <input
           type="text"
           placeholder="Add tag"
           value={newTag}
           onChange={(e) => setNewTag(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-          className="flex-1 px-3 py-2 border rounded-xl focus:outline-none focus:border-indigo-500"
+          className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
         />
         <button
           type="button"
           onClick={handleAddTag}
-          className="px-4 py-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600"
+          className="px-5 py-3 bg-indigo-500 text-white rounded-2xl hover:bg-indigo-600 shadow-md transition-all duration-300"
         >
           Add
         </button>
@@ -231,14 +233,14 @@ export default function ArticleForm() {
         placeholder="Write your article..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        className="w-full h-48 px-4 py-3 border rounded-xl focus:outline-none focus:border-indigo-500"
+        className="w-full h-64 px-6 py-5 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg resize-none transition-all duration-300 shadow-inner"
       />
 
       {/* Save button */}
       <button
         onClick={handleSave}
         disabled={isSaving}
-        className="w-full py-3 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 disabled:opacity-50"
+        className="w-full py-4 bg-indigo-500 text-white rounded-2xl hover:bg-indigo-600 disabled:opacity-50 shadow-lg transition-all duration-300 text-lg font-semibold"
       >
         {isSaving ? 'Saving...' : 'Save Article'}
       </button>
