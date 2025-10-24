@@ -33,8 +33,4 @@ export interface User {
   role?: string;
 }
 
-export interface LexicalEditorProps {
-  initialContent?: string;
-  onChange?: (content: string) => void;
-  readOnly?: boolean;
-}
+
