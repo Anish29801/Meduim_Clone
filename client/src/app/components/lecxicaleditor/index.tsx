@@ -11,12 +11,7 @@ import { useEffect } from 'react';
 
 import { CodeHighlightPlugin } from './plugins/CodeHighlightPlugin';
 import { LinkPlugin } from './plugins/LinkPlugin';
-
-export interface LexicalEditorProps {
-  initialContent?: string;
-  onChange?: (val: string) => void;
-  readOnly?: boolean;
-}
+import { LexicalEditorProps } from '@/app/type';
 
 export default function LexicalEditor({
   initialContent = '',

@@ -4,10 +4,7 @@ import { useState, useEffect } from 'react';
 import LexicalEditor from '@/app/components/lecxicaleditor';
 import { useApi } from '@/app/hooks/useApi';
 import toast, { Toaster } from 'react-hot-toast';
-
-interface ArticlePageProps {
-  articleId?: number;
-}
+import { ArticlePageProps } from '../type';
 
 export default function ArticlePage({ articleId }: ArticlePageProps) {
   const [id, setId] = useState<number | null>(articleId || null);
