@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import LexicalEditor from '@/app/components/lecxicaleditor';
 import { useApi } from '@/app/hooks/useApi';
 import toast, { Toaster } from 'react-hot-toast';
-import type { ArticlePageProps } from '../type';
+import { useRouter } from 'next/navigation';
 
-export default function ArticlePage({ articleId }: ArticlePageProps) {
-  const [id, setId] = useState<number | null>(articleId || null);
+export default function ArticleForm() {
+  const router = useRouter();
+  const { callApi } = useApi();
+
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [coverImage, setCoverImage] = useState('');
@@ -18,28 +20,12 @@ export default function ArticlePage({ articleId }: ArticlePageProps) {
   );
   const [isSaving, setIsSaving] = useState(false);
 
-  const { callApi } = useApi();
-
   // Fetch categories
   useEffect(() => {
     callApi('/api/categories')
       .then((data) => setCategories(data || []))
       .catch(() => toast.error('Failed to fetch categories'));
   }, [callApi]);
-
-  // Fetch article if editing
-  useEffect(() => {
-    if (!id) return;
-    callApi(`/api/articles/${id}`)
-      .then((data) => {
-        setTitle(data.title || '');
-        setContent(data.content || '');
-        setCoverImage(data.coverImage || '');
-        setCategoryId(data.categoryId ?? null);
-        setTags(data.tags?.map((t: any) => t.name) || []);
-      })
-      .catch(() => toast.error('Failed to fetch article'));
-  }, [id, callApi]);
 
   const addTag = (tag: string) => {
     const t = tag.trim();
@@ -60,59 +46,63 @@ export default function ArticlePage({ articleId }: ArticlePageProps) {
         tags,
         authorId: 1,
       };
-      const data = await callApi(`/api/articles${id ? '/' + id : ''}`, {
-        method: id ? 'PUT' : 'POST',
+
+      await callApi('/api/articles', {
+        method: 'POST',
         data: payload,
       });
-      toast.success('Article saved successfully!');
-      if (!id && data?.id) setId(data.id);
+
+      toast.success('✅ Article created successfully!');
+      setTimeout(() => router.push('/dashboard'), 10);
     } catch {
-      toast.error('Failed to save article');
+      toast.error('Failed to create article');
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <main className="p-6 max-w-3xl mx-auto space-y-4">
+    <main className="p-6 max-w-3xl mx-auto space-y-6">
       <Toaster position="top-right" />
-
-      <h1 className="text-3xl font-bold">
-        {id ? '✏️ Edit Article' : '📝 Create Article'}
+      <h1 className="text-4xl font-extrabold text-gray-900">
+        📝 Create New Article
       </h1>
 
+      {/* Title */}
       <input
         type="text"
         placeholder="Title..."
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-900"
+        className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg font-medium transition"
       />
 
+      {/* Cover Image */}
       <input
         type="text"
         placeholder="Cover image URL..."
         value={coverImage}
         onChange={(e) => setCoverImage(e.target.value)}
-        className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-900"
+        className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
       />
       {coverImage && (
         <img
           src={coverImage}
           alt="cover"
-          className="w-full max-h-64 rounded shadow object-cover"
+          className="w-full max-h-64 rounded-xl shadow-lg object-cover mt-2 transition-all duration-300 hover:scale-105"
           onError={(e) =>
             ((e.target as HTMLImageElement).style.display = 'none')
           }
         />
       )}
 
+      {/* Category */}
       <select
         value={categoryId ?? ''}
         onChange={(e) =>
           setCategoryId(e.target.value ? Number(e.target.value) : null)
         }
-        className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-900"
+        className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
       >
         <option value="">Select category</option>
         {categories.map((c) => (
@@ -122,6 +112,7 @@ export default function ArticlePage({ articleId }: ArticlePageProps) {
         ))}
       </select>
 
+      {/* Tags */}
       <input
         type="text"
         placeholder="Add tag and press Enter"
@@ -132,36 +123,41 @@ export default function ArticlePage({ articleId }: ArticlePageProps) {
             (e.target as HTMLInputElement).value = '';
           }
         }}
-        className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-900"
+        className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
       />
       <div className="flex flex-wrap gap-2 mt-2">
         {tags.map((t) => (
           <span
             key={t}
-            className="bg-gray-200 px-2 py-1 rounded-full flex items-center gap-1 text-sm"
+            className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full flex items-center gap-2 text-sm font-medium shadow-sm transition hover:bg-indigo-200"
           >
             {t}
-            <button onClick={() => removeTag(t)} className="text-red-500">
+            <button
+              onClick={() => removeTag(t)}
+              className="text-red-500 hover:text-red-700 transition"
+            >
               ×
             </button>
           </span>
         ))}
       </div>
 
-      <div className="border rounded p-2 bg-white">
+      {/* Lexical Editor */}
+      <div className="border border-gray-300 rounded-xl p-4 bg-white shadow-sm">
         <LexicalEditor initialContent={content} onChange={setContent} />
       </div>
 
-      <div className="flex justify-between items-center mt-2">
+      {/* Actions */}
+      <div className="flex justify-between items-center mt-4">
         <span className="text-sm text-gray-500">
-          {isSaving ? 'Saving...' : 'Click Save to persist'}
+          {isSaving ? 'Saving...' : 'Click Save to create'}
         </span>
         <button
           onClick={handleSave}
-          className="px-4 py-2 bg-gray-900 text-white rounded hover:scale-105 transition"
           disabled={isSaving}
+          className="px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSaving ? 'Saving…' : '💾 Save'}
+          {isSaving ? 'Creating…' : '📝 Create Article'}
         </button>
       </div>
     </main>

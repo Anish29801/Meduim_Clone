@@ -17,7 +17,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; // ✅ for redirect
+import { useRouter } from 'next/navigation'; //  for redirect
 import male from '@/../public/male.svg';
 import female from '@/../public/female.svg';
 import Sidebar from './Sidebar';
@@ -169,8 +169,8 @@ export default function Navbar() {
               ) : (
                 <>
                   <button
-                    onClick={() => router.push('/dashboard')}
-                    className="hidden sm:inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100"
+                    onClick={() => router.push('/articles/new')}
+                    className="inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100 transition"
                   >
                     <PencilSquareIcon className="h-5 w-5 mr-1" />
                     Write

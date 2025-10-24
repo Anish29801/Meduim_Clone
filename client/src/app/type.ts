@@ -34,7 +34,7 @@ export interface User {
 }
 
 export interface ArticlePageProps {
-  articleId?: number;
+  articleId?: number | null;
 }
 
 export interface LexicalEditorProps {
@@ -42,6 +42,7 @@ export interface LexicalEditorProps {
   onChange?: (val: string) => void;
   readOnly?: boolean;
 }
+
 export interface Post {
   id: number;
   title: string;
