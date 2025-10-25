@@ -94,25 +94,34 @@ export default function ArticleForm() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8 bg-white rounded-3xl shadow-xl space-y-8">
+    <div className="max-w-3xl mx-auto p-6 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 rounded-2xl shadow-xl space-y-6">
       <Toaster position="top-right" />
 
-      <input
-        type="text"
-        placeholder="Article Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="w-full px-6 py-4 text-2xl font-semibold border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
-      />
+      {/* Title */}
+      <div className="flex flex-col">
+        <label className="mb-1 text-indigo-900 font-semibold text-sm">
+          Title
+        </label>
+        <input
+          type="text"
+          placeholder="Article Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full px-4 py-2 text-lg font-semibold rounded-xl bg-white border-2 border-indigo-300 placeholder-indigo-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-indigo-500 transition-all duration-300"
+        />
+      </div>
 
       {/* Category */}
-      <div className="relative">
+      <div className="flex flex-col">
+        <label className="mb-1 text-indigo-900 font-semibold text-sm">
+          Category
+        </label>
         <select
           value={categoryId ?? ''}
           onChange={(e) =>
             setCategoryId(e.target.value ? Number(e.target.value) : null)
           }
-          className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 appearance-none bg-white text-gray-700 font-medium cursor-pointer"
+          className="w-full px-4 py-2 rounded-xl bg-white border-2 border-indigo-300 text-indigo-700 font-medium cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-indigo-500 transition-all duration-300"
         >
           <option value="">Select a category</option>
           {categories.map((c) => (
@@ -125,7 +134,7 @@ export default function ArticleForm() {
 
       {/* Cover Image */}
       <div
-        className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer hover:border-indigo-500 transition-all duration-300 relative flex flex-col items-center justify-center"
+        className="border-2 border-dashed border-indigo-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-400 transition-all duration-300 relative flex flex-col items-center justify-center bg-white/30 backdrop-blur-sm"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onClick={() => fileInputRef.current?.click()}
@@ -135,7 +144,7 @@ export default function ArticleForm() {
             <img
               src={URL.createObjectURL(coverFile)}
               alt="Cover"
-              className="mx-auto h-52 object-contain rounded-2xl shadow-lg"
+              className="mx-auto h-40 object-contain rounded-xl shadow-md"
             />
             <button
               type="button"
@@ -143,13 +152,13 @@ export default function ArticleForm() {
                 e.stopPropagation();
                 removeCoverImage();
               }}
-              className="absolute top-3 right-3 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 shadow-md"
+              className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 shadow"
             >
               ×
             </button>
           </div>
         ) : (
-          <p className="text-gray-400 font-medium">
+          <p className="text-indigo-500 font-medium">
             Drag & drop or click to upload cover image
           </p>
         )}
@@ -163,11 +172,11 @@ export default function ArticleForm() {
       </div>
 
       {/* Tags */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2">
         {tags.map((tag) => (
           <div
             key={tag}
-            className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full flex items-center gap-2 shadow-sm"
+            className="bg-purple-200 text-purple-800 px-3 py-1 rounded-full flex items-center gap-1 shadow-sm"
           >
             {tag}{' '}
             <button type="button" onClick={() => handleRemoveTag(tag)}>
@@ -176,37 +185,42 @@ export default function ArticleForm() {
           </div>
         ))}
       </div>
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         <input
           type="text"
           placeholder="Add tag"
           value={newTag}
           onChange={(e) => setNewTag(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-          className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
+          className="flex-1 px-3 py-2 border-2 border-indigo-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-indigo-500 transition-all duration-300"
         />
         <button
           type="button"
           onClick={handleAddTag}
-          className="px-5 py-3 bg-indigo-500 text-white rounded-2xl hover:bg-indigo-600 shadow-md transition-all duration-300"
+          className="px-4 py-2 bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 text-white rounded-xl shadow hover:from-purple-500 hover:via-pink-500 hover:to-red-500 transition-all duration-300"
         >
           Add
         </button>
       </div>
 
       {/* Content */}
-      <textarea
-        placeholder="Write your article..."
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        className="w-full h-64 px-6 py-5 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg resize-none transition-all duration-300 shadow-inner"
-      />
+      <div className="flex flex-col">
+        <label className="mb-1 text-indigo-900 font-semibold text-sm">
+          Content
+        </label>
+        <textarea
+          placeholder="Write your article..."
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="w-full h-48 px-4 py-3 rounded-xl bg-white border-2 border-indigo-300 shadow-inner text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-indigo-500 transition-all duration-300"
+        />
+      </div>
 
       {/* Save */}
       <button
         onClick={handleSave}
         disabled={isSaving}
-        className="w-full py-4 bg-indigo-500 text-white rounded-2xl hover:bg-indigo-600 disabled:opacity-50 shadow-lg transition-all duration-300 text-lg font-semibold"
+        className="w-full py-3 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 text-white rounded-xl hover:from-blue-500 hover:via-indigo-600 hover:to-purple-600 disabled:opacity-50 shadow transition-all duration-300 font-semibold"
       >
         {isSaving ? 'Saving...' : 'Save Article'}
       </button>
