@@ -1,6 +1,8 @@
 import { Router } from 'express';
+import multer from 'multer';
 import {
   createArticle,
+  getArticles,
   getArticle,
   deleteArticle,
   getArticleCover,
@@ -8,9 +10,15 @@ import {
 
 const router = Router();
 
-router.post('/', createArticle);
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Routes
+router.get('/', getArticles);
 router.get('/:id', getArticle);
-router.get('/:id/cover', getArticleCover); // serve image
+router.get('/:id/cover', getArticleCover);
+router.post('/', upload.single('coverImage'), createArticle);
+
+// DELETE article
 router.delete('/:id', deleteArticle);
 
 export default router;

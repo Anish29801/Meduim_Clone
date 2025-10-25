@@ -16,7 +16,7 @@ export default function ArticleForm() {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [coverImageBase64, setCoverImageBase64] = useState<string | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null); // ✅ binary file
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
@@ -25,7 +25,6 @@ export default function ArticleForm() {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Fetch categories from backend
   useEffect(() => {
     async function fetchCategories() {
       try {
@@ -38,30 +37,20 @@ export default function ArticleForm() {
     fetchCategories();
   }, [callApi]);
 
-  // Handle file selection (click or drag & drop)
-  const handleFileChange = (file: File) => {
-    const reader = new FileReader();
-    reader.onloadend = () => setCoverImageBase64(reader.result as string);
-    reader.readAsDataURL(file);
-  };
-
+  // File selection
+  const handleFileChange = (file: File) => setCoverFile(file);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files && e.target.files[0])
       handleFileChange(e.target.files[0]);
-    }
   };
-
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    if (e.dataTransfer.files && e.dataTransfer.files[0])
       handleFileChange(e.dataTransfer.files[0]);
-    }
   };
-
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) =>
     e.preventDefault();
-
-  const removeCoverImage = () => setCoverImageBase64(null);
+  const removeCoverImage = () => setCoverFile(null);
 
   // Tags
   const handleAddTag = () => {
@@ -69,7 +58,6 @@ export default function ArticleForm() {
     if (tag && !tags.includes(tag)) setTags([...tags, tag]);
     setNewTag('');
   };
-
   const handleRemoveTag = (tag: string) =>
     setTags(tags.filter((t) => t !== tag));
 
@@ -77,21 +65,24 @@ export default function ArticleForm() {
   const handleSave = async () => {
     if (!title.trim()) return toast.error('Title is required!');
     if (!categoryId) return toast.error('Please select a category!');
-    if (!coverImageBase64) return toast.error('Please select a cover image!');
+    if (!coverFile) return toast.error('Please select a cover image!');
 
     setIsSaving(true);
-
     try {
-      const payload = {
-        title: title.trim(),
-        content,
-        coverImageBase64, // frontend Base64 → backend will convert to binary
-        categoryId,
-        tags,
-        authorId: 1, // replace with logged-in user ID
-      };
+      const formData = new FormData();
+      formData.append('title', title.trim());
+      formData.append('content', content);
+      formData.append('categoryId', categoryId.toString());
+      formData.append('authorId', '1'); // replace with logged-in user ID
+      formData.append('tags', JSON.stringify(tags)); // form data allways accepts string data
+      // tags.forEach((tag) => formData.append('tags', tag));
+      formData.append('coverImage', coverFile); // ✅ append binary
 
-      await callApi('/api/articles', { method: 'POST', data: payload });
+      await callApi('/api/articles', {
+        method: 'POST',
+        data: formData,
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
       toast.success('✅ Article created successfully!');
       setTimeout(() => router.push('/dashboard'), 200);
@@ -106,7 +97,6 @@ export default function ArticleForm() {
     <div className="max-w-4xl mx-auto p-8 bg-white rounded-3xl shadow-xl space-y-8">
       <Toaster position="top-right" />
 
-      {/* Title */}
       <input
         type="text"
         placeholder="Article Title"
@@ -131,34 +121,19 @@ export default function ArticleForm() {
             </option>
           ))}
         </select>
-        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-indigo-500">
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </div>
       </div>
 
-      {/* Cover Image Drag & Drop */}
+      {/* Cover Image */}
       <div
         className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer hover:border-indigo-500 transition-all duration-300 relative flex flex-col items-center justify-center"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onClick={() => fileInputRef.current?.click()}
       >
-        {coverImageBase64 ? (
+        {coverFile ? (
           <div className="relative">
             <img
-              src={coverImageBase64}
+              src={URL.createObjectURL(coverFile)}
               alt="Cover"
               className="mx-auto h-52 object-contain rounded-2xl shadow-lg"
             />
@@ -194,7 +169,7 @@ export default function ArticleForm() {
             key={tag}
             className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full flex items-center gap-2 shadow-sm"
           >
-            {tag}
+            {tag}{' '}
             <button type="button" onClick={() => handleRemoveTag(tag)}>
               ×
             </button>
@@ -227,7 +202,7 @@ export default function ArticleForm() {
         className="w-full h-64 px-6 py-5 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg resize-none transition-all duration-300 shadow-inner"
       />
 
-      {/* Save button */}
+      {/* Save */}
       <button
         onClick={handleSave}
         disabled={isSaving}

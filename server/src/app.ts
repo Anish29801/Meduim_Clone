@@ -8,14 +8,13 @@ import { applyCors } from './middleware/cors';
 import path from 'path';
 
 const app = express();
-
 app.use(applyCors);
 
-// Increase JSON payload limit for base64 images
+// Increase JSON payload limit (still needed for text fields)
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ limit: '2mb', extended: true }));
 
-// Serve uploaded images
+// Static uploads folder (optional, if any files saved physically)
 app.use(
   '/uploads',
   express.static(path.join(__dirname, '../../public/uploads'))

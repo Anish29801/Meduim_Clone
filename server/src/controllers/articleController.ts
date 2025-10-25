@@ -1,39 +1,30 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma';
-import { CreateArticleData } from '../services/articleService';
+import {
+  CreateArticleData,
+  createArticleService,
+} from '../services/articleService';
 
-// CREATE article
-export const createArticle = async (
-  req: Request<{}, {}, CreateArticleData>,
-  res: Response
-) => {
+// ✅ multer middleware ke sath
+export const createArticle = async (req: Request, res: Response) => {
   try {
-    const { title, content, coverImageBase64, tags, categoryId, authorId } =
-      req.body;
-    if (!coverImageBase64) throw new Error('Cover image required');
+    const { title, content, categoryId, authorId, tags } = req.body;
 
-    // Base64 → Buffer
-    const matches = coverImageBase64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
-    if (!matches || matches.length !== 3)
-      throw new Error('Invalid base64 image');
+    if (!req.file) throw new Error('Cover image required');
+    const fileBuffer: Buffer = req.file.buffer;
 
-    const buffer = Buffer.from(matches[2], 'base64'); // store binary
+    // multer memoryStorage se buffer
+    const myUint8Array: Uint8Array<ArrayBuffer> = new Uint8Array(fileBuffer);
 
-    const article = await prisma.article.create({
-      data: {
-        title,
-        content,
-        coverImageBytes: buffer,
-        categoryId,
-        authorId,
-        tags: {
-          connectOrCreate: (tags || []).map((tag) => ({
-            where: { name: tag },
-            create: { name: tag },
-          })),
-        },
-      },
-      include: { tags: true },
+    const coverBytes = myUint8Array;
+
+    const article = await createArticleService({
+      title,
+      content,
+      categoryId: Number(categoryId),
+      authorId: Number(authorId),
+      tags: JSON.parse(tags || '[]'), // tags as JSON array
+      coverImageBytes: coverBytes,
     });
 
     res.status(201).json(article);
@@ -43,7 +34,24 @@ export const createArticle = async (
   }
 };
 
-// GET single article (with metadata)
+// GET all articles
+export const getArticles = async (_req: Request, res: Response) => {
+  try {
+    const articles = await prisma.article.findMany({
+      include: {
+        author: true,
+        category: true,
+        tags: { select: { id: true, name: true } },
+      },
+    });
+    res.json(articles);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch articles' });
+  }
+};
+
+// GET single article
 export const getArticle = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
@@ -56,8 +64,7 @@ export const getArticle = async (req: Request, res: Response) => {
       },
     });
     if (!article) return res.status(404).json({ error: 'Article not found' });
-
-    res.json(article); // coverImageBytes included
+    res.json(article);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch article' });
@@ -72,7 +79,7 @@ export const getArticleCover = async (req: Request, res: Response) => {
     if (!article || !article.coverImageBytes) return res.sendStatus(404);
 
     res.setHeader('Content-Type', 'image/png');
-    res.send(Buffer.from(article.coverImageBytes.buffer));
+    res.send(article.coverImageBytes); // ✅ Uint8Array works
   } catch (err) {
     console.error(err);
     res.sendStatus(500);
