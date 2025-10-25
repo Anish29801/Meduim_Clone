@@ -17,7 +17,6 @@ export default function ArticleForm() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [coverImageBase64, setCoverImageBase64] = useState<string | null>(null);
-  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
@@ -37,7 +36,7 @@ export default function ArticleForm() {
       }
     }
     fetchCategories();
-  }, []);
+  }, [callApi]);
 
   // Handle file selection (click or drag & drop)
   const handleFileChange = (file: File) => {
@@ -83,18 +82,11 @@ export default function ArticleForm() {
     setIsSaving(true);
 
     try {
-      // 1️⃣ Upload cover image
-      const uploadRes = await callApi('/api/upload', {
-        method: 'POST',
-        data: { coverImageBase64 },
-      });
-      setCoverImageUrl(uploadRes.url);
-
-      // 2️⃣ Create article
+      // 🔑 Send everything in a single API call
       const payload = {
         title: title.trim(),
         content,
-        coverImage: uploadRes.url,
+        coverImageBase64, // directly send base64
         categoryId,
         tags,
         authorId: 1, // replace with logged-in user ID

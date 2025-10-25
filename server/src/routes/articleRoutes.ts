@@ -6,6 +6,7 @@ import {
   updateArticle,
   deleteArticle,
 } from '../controllers/articleController';
+
 const router = Router();
 
 router.get('/', getArticles);

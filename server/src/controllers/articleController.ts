@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma';
-import { createArticleService } from '../services/articleService';
+import fs from 'fs';
+import path from 'path';
 
-// GET all articles
+// Get all articles
 export const getArticles = async (_req: Request, res: Response) => {
   try {
     const articles = await prisma.article.findMany({
@@ -19,7 +20,7 @@ export const getArticles = async (_req: Request, res: Response) => {
   }
 };
 
-// GET single article
+// Get single article
 export const getArticle = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
@@ -39,18 +40,54 @@ export const getArticle = async (req: Request, res: Response) => {
   }
 };
 
-// CREATE article
+// CREATE article (with base64 cover image)
 export const createArticle = async (req: Request, res: Response) => {
   try {
-    const article = await createArticleService(req.body);
-    res.json(article);
+    const { title, content, coverImageBase64, tags, categoryId, authorId } =
+      req.body;
+
+    if (!title) throw new Error('Title is required');
+    if (!categoryId) throw new Error('Category is required');
+    if (!coverImageBase64) throw new Error('Cover image required');
+
+    // Base64 → file
+    const matches = coverImageBase64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3)
+      throw new Error('Invalid base64 image');
+
+    const buffer = Buffer.from(matches[2], 'base64');
+    const uploadDir = path.join(__dirname, '../../public/uploads');
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+    const filename = `cover-${Date.now()}.png`;
+    fs.writeFileSync(path.join(uploadDir, filename), buffer);
+
+    const coverImageUrl = `/uploads/${filename}`;
+
+    const article = await prisma.article.create({
+      data: {
+        title,
+        content,
+        coverImage: coverImageUrl,
+        categoryId: Number(categoryId),
+        authorId: Number(authorId),
+        tags: {
+          connectOrCreate: (tags || []).map((tag: string) => ({
+            where: { name: tag },
+            create: { name: tag },
+          })),
+        },
+      },
+      include: { tags: true },
+    });
+
+    res.status(201).json(article);
   } catch (err: any) {
     console.error(err);
     res.status(400).json({ error: err.message });
   }
 };
-
-// UPDATE article
+// Update article
 export const updateArticle = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
@@ -65,7 +102,7 @@ export const updateArticle = async (req: Request, res: Response) => {
         categoryId,
         tags: tags?.length
           ? {
-              set: [], // remove existing tags
+              set: [],
               connectOrCreate: tags.map((tag: string) => ({
                 where: { name: tag },
                 create: { name: tag },
@@ -83,7 +120,7 @@ export const updateArticle = async (req: Request, res: Response) => {
   }
 };
 
-// DELETE article
+// Delete article
 export const deleteArticle = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
