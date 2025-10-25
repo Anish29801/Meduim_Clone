@@ -169,7 +169,7 @@ export default function Navbar() {
               ) : (
                 <>
                   <button
-                    onClick={() => router.push('/dashboard')}
+                    onClick={() => router.push('/article')}
                     className="hidden sm:inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100"
                   >
                     <PencilSquareIcon className="h-5 w-5 mr-1" />

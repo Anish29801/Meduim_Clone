@@ -6,7 +6,20 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "miro.medium.com",
-        pathname: "/**", // allow all paths from this domain
+        port: "", // ✅ Required for type safety in TS
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "ssl.gstatic.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        port: "",
+        pathname: "/**",
       },
     ],
   },
