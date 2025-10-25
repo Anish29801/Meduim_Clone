@@ -16,8 +16,7 @@ export default function ArticleForm() {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [coverImageBase64, setCoverImageBase64] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
@@ -39,32 +38,30 @@ export default function ArticleForm() {
     fetchCategories();
   }, [callApi]);
 
-  // Handle file selection
+  // Handle file selection (click or drag & drop)
   const handleFileChange = (file: File) => {
-    setCoverImageFile(file);
     const reader = new FileReader();
-    reader.onloadend = () => setCoverPreview(reader.result as string);
+    reader.onloadend = () => setCoverImageBase64(reader.result as string);
     reader.readAsDataURL(file);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0])
+    if (e.target.files && e.target.files[0]) {
       handleFileChange(e.target.files[0]);
+    }
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0])
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileChange(e.dataTransfer.files[0]);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) =>
     e.preventDefault();
 
-  const removeCoverImage = () => {
-    setCoverImageFile(null);
-    setCoverPreview(null);
-  };
+  const removeCoverImage = () => setCoverImageBase64(null);
 
   // Tags
   const handleAddTag = () => {
@@ -80,24 +77,21 @@ export default function ArticleForm() {
   const handleSave = async () => {
     if (!title.trim()) return toast.error('Title is required!');
     if (!categoryId) return toast.error('Please select a category!');
-    if (!coverImageFile) return toast.error('Please select a cover image!');
+    if (!coverImageBase64) return toast.error('Please select a cover image!');
 
     setIsSaving(true);
 
     try {
-      const formData = new FormData();
-      formData.append('title', title.trim());
-      formData.append('content', content);
-      formData.append('categoryId', categoryId.toString());
-      formData.append('authorId', '1'); // replace with actual logged-in user id
-      tags.forEach((tag) => formData.append('tags', tag));
-      formData.append('coverImage', coverImageFile); // actual binary
+      const payload = {
+        title: title.trim(),
+        content,
+        coverImageBase64, // frontend Base64 → backend will convert to binary
+        categoryId,
+        tags,
+        authorId: 1, // replace with logged-in user ID
+      };
 
-      await callApi('/api/articles', {
-        method: 'POST',
-        data: formData,
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await callApi('/api/articles', { method: 'POST', data: payload });
 
       toast.success('✅ Article created successfully!');
       setTimeout(() => router.push('/dashboard'), 200);
@@ -137,6 +131,21 @@ export default function ArticleForm() {
             </option>
           ))}
         </select>
+        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-indigo-500">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
       </div>
 
       {/* Cover Image Drag & Drop */}
@@ -146,10 +155,10 @@ export default function ArticleForm() {
         onDragOver={handleDragOver}
         onClick={() => fileInputRef.current?.click()}
       >
-        {coverPreview ? (
+        {coverImageBase64 ? (
           <div className="relative">
             <img
-              src={coverPreview}
+              src={coverImageBase64}
               alt="Cover"
               className="mx-auto h-52 object-contain rounded-2xl shadow-lg"
             />
