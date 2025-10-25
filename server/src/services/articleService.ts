@@ -1,34 +1,38 @@
 import prisma from '../prisma';
 
-interface CreateArticleData {
+// ✅ Type definition for Create Article
+export interface CreateArticleData {
   title: string;
   content: string;
-  coverImage: string; // URL string
+  coverImageBase64: string;
   tags: string[];
   categoryId: number;
   authorId: number;
 }
 
+// Create Article Service
 export const createArticleService = async (data: CreateArticleData) => {
-  const { title, content, coverImage, tags, categoryId, authorId } = data;
+  const { title, content, coverImageBase64, tags, categoryId, authorId } = data;
 
-  if (!categoryId) throw new Error('categoryId is required');
+  if (!title) throw new Error('Title required');
+  if (!categoryId) throw new Error('Category required');
+  if (!coverImageBase64) throw new Error('Cover image required');
 
-  const category = await prisma.category.findUnique({
-    where: { id: Number(categoryId) },
-  });
-  console.log('category', category);
-  // if (!category) throw new Error('Invalid categoryId');
+  // Base64 → Buffer
+  const matches = coverImageBase64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+  if (!matches || matches.length !== 3) throw new Error('Invalid base64 image');
+
+  const buffer = Buffer.from(matches[2], 'base64');
 
   const article = await prisma.article.create({
     data: {
       title,
       content,
-      coverImage,
-      categoryId: category?.id || 1,
+      coverImageBytes: buffer,
+      categoryId,
       authorId,
       tags: {
-        connectOrCreate: tags.map((tagName) => ({
+        connectOrCreate: (tags || []).map((tagName) => ({
           where: { name: tagName },
           create: { name: tagName },
         })),

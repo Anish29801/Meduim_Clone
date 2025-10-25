@@ -1,18 +1,16 @@
 import { Router } from 'express';
 import {
-  getArticles,
-  getArticle,
   createArticle,
-  updateArticle,
+  getArticle,
   deleteArticle,
+  getArticleCover,
 } from '../controllers/articleController';
 
 const router = Router();
 
-router.get('/', getArticles);
-router.get('/:id', getArticle);
 router.post('/', createArticle);
-router.put('/:id', updateArticle);
+router.get('/:id', getArticle);
+router.get('/:id/cover', getArticleCover); // serve image
 router.delete('/:id', deleteArticle);
 
 export default router;

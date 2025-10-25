@@ -1,78 +1,33 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma';
-import fs from 'fs';
-import path from 'path';
+import { CreateArticleData } from '../services/articleService';
 
-// Get all articles
-export const getArticles = async (_req: Request, res: Response) => {
-  try {
-    const articles = await prisma.article.findMany({
-      include: {
-        author: true,
-        category: true,
-        tags: { select: { id: true, name: true } },
-      },
-    });
-    res.json(articles);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch articles' });
-  }
-};
-
-// Get single article
-export const getArticle = async (req: Request, res: Response) => {
-  try {
-    const id = Number(req.params.id);
-    const article = await prisma.article.findUnique({
-      where: { id },
-      include: {
-        author: true,
-        category: true,
-        tags: { select: { id: true, name: true } },
-      },
-    });
-    if (!article) return res.status(404).json({ error: 'Article not found' });
-    res.json(article);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch article' });
-  }
-};
-
-// CREATE article (with base64 cover image)
-export const createArticle = async (req: Request, res: Response) => {
+// CREATE article
+export const createArticle = async (
+  req: Request<{}, {}, CreateArticleData>,
+  res: Response
+) => {
   try {
     const { title, content, coverImageBase64, tags, categoryId, authorId } =
       req.body;
-
-    if (!title) throw new Error('Title is required');
-    if (!categoryId) throw new Error('Category is required');
     if (!coverImageBase64) throw new Error('Cover image required');
 
-    // Base64 → file
+    // Base64 → Buffer
     const matches = coverImageBase64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
     if (!matches || matches.length !== 3)
       throw new Error('Invalid base64 image');
 
-    const buffer = Buffer.from(matches[2], 'base64');
-    const uploadDir = path.join(__dirname, '../../public/uploads');
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-    const filename = `cover-${Date.now()}.png`;
-    fs.writeFileSync(path.join(uploadDir, filename), buffer);
-
-    const coverImageUrl = `/uploads/${filename}`;
+    const buffer = Buffer.from(matches[2], 'base64'); // store binary
 
     const article = await prisma.article.create({
       data: {
         title,
         content,
-        coverImage: coverImageUrl,
-        categoryId: Number(categoryId),
-        authorId: Number(authorId),
+        coverImageBytes: buffer,
+        categoryId,
+        authorId,
         tags: {
-          connectOrCreate: (tags || []).map((tag: string) => ({
+          connectOrCreate: (tags || []).map((tag) => ({
             where: { name: tag },
             create: { name: tag },
           })),
@@ -87,45 +42,49 @@ export const createArticle = async (req: Request, res: Response) => {
     res.status(400).json({ error: err.message });
   }
 };
-// Update article
-export const updateArticle = async (req: Request, res: Response) => {
+
+// GET single article (with metadata)
+export const getArticle = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const { title, content, coverImage, tags, categoryId } = req.body;
-
-    const article = await prisma.article.update({
+    const article = await prisma.article.findUnique({
       where: { id },
-      data: {
-        title,
-        content,
-        coverImage,
-        categoryId,
-        tags: tags?.length
-          ? {
-              set: [],
-              connectOrCreate: tags.map((tag: string) => ({
-                where: { name: tag },
-                create: { name: tag },
-              })),
-            }
-          : undefined,
+      include: {
+        author: true,
+        category: true,
+        tags: { select: { id: true, name: true } },
       },
-      include: { tags: { select: { id: true, name: true } } },
     });
+    if (!article) return res.status(404).json({ error: 'Article not found' });
 
-    res.json(article);
-  } catch (err: any) {
+    res.json(article); // coverImageBytes included
+  } catch (err) {
     console.error(err);
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to fetch article' });
   }
 };
 
-// Delete article
+// Serve cover image as binary
+export const getArticleCover = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const article = await prisma.article.findUnique({ where: { id } });
+    if (!article || !article.coverImageBytes) return res.sendStatus(404);
+
+    res.setHeader('Content-Type', 'image/png');
+    res.send(Buffer.from(article.coverImageBytes.buffer));
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+};
+
+// DELETE article
 export const deleteArticle = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     await prisma.article.delete({ where: { id } });
-    res.status(204).send();
+    res.sendStatus(204);
   } catch (err) {
     console.error(err);
     res.status(400).json({ error: 'Failed to delete article' });
