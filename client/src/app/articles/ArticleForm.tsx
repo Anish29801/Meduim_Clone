@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
 import { useApi } from '@/app/hooks/useApi';
-
+import LexicalEditor from '../components/lecxicaleditor';
 interface Category {
   id: number;
   name: string;
@@ -133,6 +133,9 @@ export default function ArticleForm() {
       </div>
 
       {/* Cover Image */}
+      <label className="mb-1 text-indigo-900 font-semibold text-sm">
+        Cover Image
+      </label>
       <div
         className="border-2 border-dashed border-indigo-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-400 transition-all duration-300 relative flex flex-col items-center justify-center bg-white/30 backdrop-blur-sm"
         onDrop={handleDrop}
@@ -185,35 +188,64 @@ export default function ArticleForm() {
           </div>
         ))}
       </div>
-      <div className="flex gap-2">
-        <input
-          type="text"
-          placeholder="Add tag"
-          value={newTag}
-          onChange={(e) => setNewTag(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-          className="flex-1 px-3 py-2 border-2 border-indigo-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-indigo-500 transition-all duration-300"
-        />
-        <button
-          type="button"
-          onClick={handleAddTag}
-          className="px-4 py-2 bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 text-white rounded-xl shadow hover:from-purple-500 hover:via-pink-500 hover:to-red-500 transition-all duration-300"
-        >
-          Add
-        </button>
+      <div className="space-y-3">
+        <div className="flex gap-2 items-end">
+          <div className="flex flex-col flex-1">
+            <label className="mb-1 text-indigo-900 font-semibold text-sm">
+              Tags
+            </label>
+            <input
+              type="text"
+              placeholder="Add tag"
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+              className="w-full px-3 py-2 border-2 border-indigo-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-indigo-500 transition-all duration-300"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={handleAddTag}
+            className="self-end h-[42px] px-6 bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 text-white rounded-xl shadow hover:from-purple-500 hover:via-pink-500 hover:to-red-500 transition-all duration-300"
+          >
+            Add
+          </button>
+        </div>
+
+        {/* Tag List */}
+        <div className="flex flex-wrap gap-2">
+          {tags.map((tag, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-2 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full"
+            >
+              <span>#{tag}</span>
+              <button
+                onClick={() => handleRemoveTag(tag)}
+                className="text-indigo-500 hover:text-red-500 transition"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Content */}
       <div className="flex flex-col">
-        <label className="mb-1 text-indigo-900 font-semibold text-sm">
+        {/* <label className="mb-1 text-indigo-900 font-semibold text-sm">
           Content
-        </label>
-        <textarea
+        </label> */}
+        {/* <textarea
           placeholder="Write your article..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
           className="w-full h-48 px-4 py-3 rounded-xl bg-white border-2 border-indigo-300 shadow-inner text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-indigo-500 transition-all duration-300"
-        />
+        /> */}
+        <div className="max-w-4xl mx-auto mt-10">
+          <h1 className="text-2xl font-bold mb-4">Write your article</h1>
+          <LexicalEditor />
+        </div>
       </div>
 
       {/* Save */}

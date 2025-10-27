@@ -67,7 +67,7 @@ export default function LexicalEditor({
         <div className="prose max-w-none">
           <RichTextPlugin
             contentEditable={
-              <ContentEditable className="min-h-[220px] outline-none px-2 py-1 text-[16px]" />
+              <ContentEditable className="min-h-[150px] min-w-[700px] outline-none px-2 py-1 text-[16px]" />
             }
             placeholder={
               <div className="text-gray-400">Start writing your article...</div>
