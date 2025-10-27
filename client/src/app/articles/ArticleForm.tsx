@@ -233,15 +233,6 @@ export default function ArticleForm() {
 
       {/* Content */}
       <div className="flex flex-col">
-        {/* <label className="mb-1 text-indigo-900 font-semibold text-sm">
-          Content
-        </label> */}
-        {/* <textarea
-          placeholder="Write your article..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="w-full h-48 px-4 py-3 rounded-xl bg-white border-2 border-indigo-300 shadow-inner text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-indigo-500 transition-all duration-300"
-        /> */}
         <div className="max-w-4xl mx-auto mt-10">
           <h1 className="text-2xl font-bold mb-4">Write your article</h1>
           <LexicalEditor />

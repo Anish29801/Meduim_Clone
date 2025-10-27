@@ -1,3 +1,4 @@
+//src/Services/articleService.ts
 import prisma from '../prisma';
 
 export interface CreateArticleData {

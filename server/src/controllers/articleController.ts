@@ -1,3 +1,4 @@
+//src/componets/articleController.ts
 import { Request, Response } from 'express';
 import prisma from '../prisma';
 import {
@@ -44,7 +45,18 @@ export const getArticles = async (_req: Request, res: Response) => {
         tags: { select: { id: true, name: true } },
       },
     });
-    res.json(articles);
+
+    // Convert cover bytes → base64
+    const formatted = articles.map((a) => ({
+      ...a,
+      coverImageBase64: a.coverImageBytes
+        ? `data:image/png;base64,${Buffer.from(a.coverImageBytes).toString(
+            'base64'
+          )}`
+        : null,
+    }));
+
+    res.json(formatted);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch articles' });
@@ -79,10 +91,52 @@ export const getArticleCover = async (req: Request, res: Response) => {
     if (!article || !article.coverImageBytes) return res.sendStatus(404);
 
     res.setHeader('Content-Type', 'image/png');
-    res.send(article.coverImageBytes); // ✅ Uint8Array works
+    res.send(article.coverImageBytes); // Uint8Array works
   } catch (err) {
     console.error(err);
     res.sendStatus(500);
+  }
+};
+
+// Update Article
+export const updateArticle = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const { title, content, categoryId, authorId, tags } = req.body;
+
+    const updateData: any = {
+      title,
+      content,
+      categoryId: Number(categoryId),
+      authorId: Number(authorId),
+    };
+
+    // agar naya image bheja gaya hai
+    if (req.file) {
+      const fileBuffer: Buffer = req.file.buffer;
+      updateData.coverImageBytes = new Uint8Array(fileBuffer);
+    }
+
+    if (tags) {
+      const parsedTags = JSON.parse(tags);
+      updateData.tags = {
+        connectOrCreate: parsedTags.map((t: string) => ({
+          where: { name: t },
+          create: { name: t },
+        })),
+      };
+    }
+
+    const updated = await prisma.article.update({
+      where: { id },
+      data: updateData,
+      include: { tags: true },
+    });
+
+    res.json(updated);
+  } catch (err: any) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
   }
 };
 

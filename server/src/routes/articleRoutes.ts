@@ -6,6 +6,7 @@ import {
   getArticle,
   deleteArticle,
   getArticleCover,
+  updateArticle,
 } from '../controllers/articleController';
 
 const router = Router();
@@ -20,5 +21,7 @@ router.post('/', upload.single('coverImage'), createArticle);
 
 // DELETE article
 router.delete('/:id', deleteArticle);
+//
+router.put('/:id', upload.single('coverImage'), updateArticle);
 
 export default router;
