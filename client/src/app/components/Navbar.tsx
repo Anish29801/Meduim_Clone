@@ -14,15 +14,15 @@ import {
   MagnifyingGlassIcon,
   PencilSquareIcon,
   XMarkIcon,
-} from "@heroicons/react/24/outline";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import male from "@/../public/male.svg";
-import female from "@/../public/female.svg";
-import Sidebar from "./Sidebar";
-import SignUp from "../signup/page";
-import Login from "../login/page";
-import UpdateUser from "../update/page";
+} from '@heroicons/react/24/outline';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation'; // ✅ for redirect
+import male from '@/../public/male.svg';
+import female from '@/../public/female.svg';
+import Sidebar from './Sidebar';
+import SignUp from '../signup/page';
+import Login from '../login/page';
+import UpdateUser from '../update/page';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -99,18 +99,13 @@ export default function Navbar() {
               ) : (
                 <>
                   <button
-                    onClick={() => router.push("/articles/new")}
-                    className="inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100 transition"
+                    onClick={() => router.push('/dashboard')}
+                    className="hidden sm:inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100"
                   >
                     <PencilSquareIcon className="h-5 w-5 mr-1" />
                     Write
                   </button>
-                  <button
-                    onClick={() => router.push("/articles/view")}
-                    className="inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100 transition"
-                  >
-                    View
-                  </button>
+
                   <button
                     type="button"
                     className="relative rounded-full p-1 text-gray-500 hover:text-gray-700 focus:outline-none"

@@ -10,11 +10,19 @@ import {
 } from "@heroicons/react/24/outline";
 
 const navigation = [
+<<<<<<< HEAD
   { name: "Home", icon: HomeIcon, href: "/", current: true },
   { name: "Library", icon: BookOpenIcon, href: "/dashboard", current: false },
   { name: "Profile", icon: UserIcon, href: "/profile", current: false },
   { name: "Stories", icon: NewspaperIcon, href: "/stories", current: false },
   { name: "Stats", icon: ChartBarIcon, href: "/stats", current: false },
+=======
+  { name: "Home", icon: HomeIcon, href: "#", current: true },
+  { name: "Library", icon: BookOpenIcon, href: "/dashboard", current: false },
+  { name: "Profile", icon: UserIcon, href: "#", current: false },
+  { name: "Stories", icon: NewspaperIcon, href: "#", current: false },
+  { name: "Stats", icon: ChartBarIcon, href: "#", current: false },
+>>>>>>> dea8136ff98feacffc7171ae902259a32ee00209
 ];
 
 function classNames(...classes: string[]) {
