@@ -3,7 +3,10 @@ import { useParams } from 'next/navigation';
 import EditArticlePage from '@/app/articles/EditArticlePage';
 
 export default function EditPage() {
-  const { id } = useParams(); // URL se id milti hai, e.g. /articles/edit/9
+  const { id } = useParams();
+  const articleId = Number(id);
 
-  return <EditArticlePage articleId={Number(id)} />;
+  if (!articleId) return <p>Invalid article ID</p>;
+
+  return <EditArticlePage articleId={articleId} />;
 }

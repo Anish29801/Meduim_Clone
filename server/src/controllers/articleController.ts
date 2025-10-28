@@ -6,7 +6,7 @@ import {
   createArticleService,
 } from '../services/articleService';
 
-// ✅ multer middleware ke sath
+// multer middleware ke sath
 export const createArticle = async (req: Request, res: Response) => {
   try {
     const { title, content, categoryId, authorId, tags } = req.body;
@@ -103,40 +103,41 @@ export const updateArticle = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { title, content, categoryId, authorId, tags } = req.body;
+    const tagList: string[] = tags ? JSON.parse(tags) : [];
 
-    const updateData: any = {
-      title,
-      content,
-      categoryId: Number(categoryId),
-      authorId: Number(authorId),
-    };
-
-    // agar naya image bheja gaya hai
+    let coverImageBase64: string | undefined;
     if (req.file) {
-      const fileBuffer: Buffer = req.file.buffer;
-      updateData.coverImageBytes = new Uint8Array(fileBuffer);
+      coverImageBase64 = `data:${
+        req.file.mimetype
+      };base64,${req.file.buffer.toString('base64')}`;
     }
 
-    if (tags) {
-      const parsedTags = JSON.parse(tags);
-      updateData.tags = {
-        connectOrCreate: parsedTags.map((t: string) => ({
-          where: { name: t },
-          create: { name: t },
-        })),
-      };
-    }
-
-    const updated = await prisma.article.update({
+    const updatedArticle = await prisma.article.update({
       where: { id },
-      data: updateData,
-      include: { tags: true },
+      data: {
+        title,
+        content,
+        categoryId: Number(categoryId),
+        authorId: Number(authorId),
+        ...(coverImageBase64 && { coverImageBase64 }),
+        tags: {
+          deleteMany: {},
+          create: tagList.map((name) => ({
+            name,
+          })),
+        },
+      },
+      include: {
+        tags: true,
+        category: true,
+        author: true,
+      },
     });
 
-    res.json(updated);
-  } catch (err: any) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+    res.json(updatedArticle);
+  } catch (error: any) {
+    console.error('Update error:', error);
+    res.status(500).json({ error: 'Failed to update article' });
   }
 };
 

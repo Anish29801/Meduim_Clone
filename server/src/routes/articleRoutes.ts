@@ -21,7 +21,7 @@ router.post('/', upload.single('coverImage'), createArticle);
 
 // DELETE article
 router.delete('/:id', deleteArticle);
-//
-router.put('/:id', upload.single('coverImage'), updateArticle);
+//update
+router.patch('/:id', upload.single('coverImage'), updateArticle);
 
 export default router;
