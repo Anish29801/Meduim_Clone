@@ -1,4 +1,5 @@
 'use client';
+import LogoLink from './LogoLink';
 
 import { useState, useEffect } from 'react';
 import {
@@ -129,12 +130,15 @@ export default function Navbar() {
                 <Bars3Icon className="h-6 w-6" />
               </button>
 
+              {/* remove admin and user dashboard */}
               {/* Logo */}
-              <a href="/" className="flex items-center space-x-2">
+              {/* <a href="/" className="flex items-center space-x-2">
                 <span className="font-serif text-xl font-semibold text-gray-900">
                   Tagebuch
                 </span>
-              </a>
+              </a> */}
+
+              <LogoLink />
 
               {/* Search */}
               <div className="ml-6 hidden md:flex items-center">
