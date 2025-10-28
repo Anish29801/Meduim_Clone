@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useApi } from "@/app/hooks/useApi";
 import { Article } from "@/app/type";
+import male from "@/app/assets/male.svg"
+import female from "@/app/assets/female.svg"
 
 type PostPageProps = {
   params: Promise<{ id: string }>;
@@ -55,7 +57,7 @@ export default function PostPage({ params }: PostPageProps) {
       {author && (
         <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
           <Image
-            src={author.avatar === "male" ? "/avatars/male.png" : "/avatars/female.png"}
+            src={author.avatar === "male" ? male : female}
             alt={`${author.fullName}'s avatar`}
             width={30}
             height={30}
