@@ -16,7 +16,7 @@ export default function ArticleForm() {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [coverFile, setCoverFile] = useState<File | null>(null); // ✅ binary file
+  const [coverFile, setCoverFile] = useState<File | null>(null); // binary file
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
@@ -75,8 +75,7 @@ export default function ArticleForm() {
       formData.append('categoryId', categoryId.toString());
       formData.append('authorId', '1'); // replace with logged-in user ID
       formData.append('tags', JSON.stringify(tags)); // form data allways accepts string data
-      // tags.forEach((tag) => formData.append('tags', tag));
-      formData.append('coverImage', coverFile); // ✅ append binary
+      formData.append('coverImage', coverFile); // append binary
 
       await callApi('/api/articles', {
         method: 'POST',
@@ -84,7 +83,7 @@ export default function ArticleForm() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      toast.success('✅ Article created successfully!');
+      toast.success('Article created successfully!');
       setTimeout(() => router.push('/dashboard'), 200);
     } catch (err: any) {
       toast.error(err?.error || 'Failed to create article');
@@ -235,7 +234,7 @@ export default function ArticleForm() {
       <div className="flex flex-col">
         <div className="max-w-4xl mx-auto mt-10">
           <h1 className="text-2xl font-bold mb-4">Write your article</h1>
-          <LexicalEditor />
+          <LexicalEditor onChange={setContent} />
         </div>
       </div>
 

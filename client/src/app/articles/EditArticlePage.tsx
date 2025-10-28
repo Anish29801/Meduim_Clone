@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useApi } from '@/app/hooks/useApi';
 import toast from 'react-hot-toast';
+import LexicalEditor from '../components/lecxicaleditor';
 
 interface Tag {
   id: number;
@@ -123,13 +124,9 @@ export default function EditArticlePage({ articleId }: Props) {
       />
 
       {/*Content */}
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        rows={6}
-        className="w-full p-3 border-2 border-gray-300 rounded-xl"
-        placeholder="Enter article content"
-      ></textarea>
+      <div className="border-2 border-gray-300 rounded-xl p-2">
+        <LexicalEditor initialContent={content} onChange={setContent} />
+      </div>
 
       {/*Category Dropdown */}
       <select
