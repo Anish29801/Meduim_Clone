@@ -2,8 +2,11 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export function Banner() {
+  const router = useRouter();
+
   return (
     <section className="flex flex-col lg:flex-row justify-between items-center px-8 md:px-16 py-12 md:py-20 relative overflow-hidden">
       {/* ✅ Left Content with motion */}
@@ -36,6 +39,7 @@ export function Banner() {
           A place to read, write, and deepen your understanding
         </motion.p>
 
+        {/* ✅ Buttons */}
         <motion.div
           className="flex justify-center lg:justify-start gap-4"
           initial={{ opacity: 0, scale: 0.9 }}
@@ -43,7 +47,7 @@ export function Banner() {
           transition={{ delay: 0.6, duration: 0.6 }}
           viewport={{ once: true }}
         >
-          {/* Start Reading Button */}
+          {/* Start Reading */}
           <motion.button
             whileHover={{
               scale: 1.07,
@@ -57,8 +61,9 @@ export function Banner() {
             <span className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/20 to-white/10 opacity-0 hover:opacity-30 rounded-full transition-opacity duration-300"></span>
           </motion.button>
 
-          {/* Start Writing Button */}
+          {/* Start Writing */}
           <motion.button
+            onClick={() => router.push("/article")}
             whileHover={{
               scale: 1.07,
               boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
@@ -71,10 +76,9 @@ export function Banner() {
             <span className="absolute inset-0 bg-gradient-to-r from-black/10 via-black/20 to-black/10 opacity-0 hover:opacity-20 rounded-full transition-opacity duration-300"></span>
           </motion.button>
         </motion.div>
-
       </motion.div>
 
-      {/* ✅ Animated Right Image */}
+      {/* ✅ Right Image */}
       <motion.div
         className="relative w-full lg:w-[30%] h-[300px] md:h-[400px] lg:h-[500px]"
         initial={{ opacity: 0, scale: 0.8 }}
