@@ -1,19 +1,21 @@
 // src/app/hooks/useApi.ts
-import { useState, useCallback } from "react";
-import axios, { AxiosRequestConfig, AxiosError } from "axios";
+import { useState, useCallback } from 'react';
+import axios, { AxiosRequestConfig, AxiosError } from 'axios';
+import toast from 'react-hot-toast';
 
 // ✅ Axios instance
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: 'http://localhost:5000',
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 
 // ✅ Request interceptor – attach token
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
     if (token) {
       // Cast headers to satisfy Axios 1.x + TS
@@ -34,17 +36,18 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (
       error.response?.status === 401 &&
-      typeof window !== "undefined" &&
-      !window.location.pathname.includes("/login")
+      typeof window !== 'undefined' &&
+      !window.location.pathname.includes('/login')
     ) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      localStorage.removeItem('token');
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
 );
 
 // ✅ Custom hook
+
 export function useApi<T = any>() {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,14 +59,20 @@ export function useApi<T = any>() {
       setError(null);
 
       try {
-        if (!endpoint) throw new Error("Endpoint is required");
+        if (!endpoint) throw new Error('Endpoint is required');
 
-        const normalizedEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-        console.log("[useApi] Request:", normalizedEndpoint, config.method || "GET");
+        const normalizedEndpoint = endpoint.startsWith('/')
+          ? endpoint
+          : `/${endpoint}`;
+        console.log(
+          '[useApi] Request:',
+          normalizedEndpoint,
+          config.method?.toUpperCase() || 'GET'
+        );
 
         // Ensure body is only sent for POST/PUT/PATCH
-        const method = (config.method || "GET").toUpperCase();
-        if (method === "POST" || method === "PUT" || method === "PATCH") {
+        const method = (config.method || 'GET').toUpperCase();
+        if (['POST', 'PUT', 'PATCH'].includes(method)) {
           config.data = config.data || {};
         }
 
@@ -75,13 +84,28 @@ export function useApi<T = any>() {
         setData(response.data);
         return response.data;
       } catch (err) {
-        const axiosErr = err as AxiosError<{ message?: string }>;
-        const message =
-          axiosErr.response?.data?.message ||
-          axiosErr.message ||
-          "Something went wrong";
+        const axiosErr = err as AxiosError<unknown>;
+        let message = axiosErr.message || 'Something went wrong';
+
+        // Try to get server message
+        if (axiosErr.response) {
+          const respData = axiosErr.response.data as any;
+          if (respData?.message) message = respData.message;
+
+          // ✅ Pretty console log
+          console.error(
+            '[useApi] Server Error:',
+            message,
+            typeof respData === 'object'
+              ? JSON.stringify(respData, null, 2)
+              : respData
+          );
+        } else {
+          console.error('[useApi] Network/Error:', message);
+        }
+
         setError(message);
-        console.error("[useApi] Error:", message, axiosErr.response?.data);
+        toast.error(message); // show user-friendly toast
         throw axiosErr;
       } finally {
         setLoading(false);

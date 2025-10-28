@@ -1,5 +1,39 @@
-import { Request, Response } from "express";
-import prisma from "../prisma";
+//src/componets/articleController.ts
+import { Request, Response } from 'express';
+import prisma from '../prisma';
+import {
+  CreateArticleData,
+  createArticleService,
+} from '../services/articleService';
+
+// multer middleware ke sath
+export const createArticle = async (req: Request, res: Response) => {
+  try {
+    const { title, content, categoryId, authorId, tags } = req.body;
+
+    if (!req.file) throw new Error('Cover image required');
+    const fileBuffer: Buffer = req.file.buffer;
+
+    // multer memoryStorage se buffer
+    const myUint8Array: Uint8Array<ArrayBuffer> = new Uint8Array(fileBuffer);
+
+    const coverBytes = myUint8Array;
+
+    const article = await createArticleService({
+      title,
+      content,
+      categoryId: Number(categoryId),
+      authorId: Number(authorId),
+      tags: JSON.parse(tags || '[]'), // tags as JSON array
+      coverImageBytes: coverBytes,
+    });
+
+    res.status(201).json(article);
+  } catch (err: any) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
+};
 
 // GET all articles
 export const getArticles = async (_req: Request, res: Response) => {
@@ -11,10 +45,21 @@ export const getArticles = async (_req: Request, res: Response) => {
         tags: { select: { id: true, name: true } },
       },
     });
-    res.json(articles);
+
+    // Convert cover bytes → base64
+    const formatted = articles.map((a) => ({
+      ...a,
+      coverImageBase64: a.coverImageBytes
+        ? `data:image/png;base64,${Buffer.from(a.coverImageBytes).toString(
+            'base64'
+          )}`
+        : null,
+    }));
+
+    res.json(formatted);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch articles" });
+    res.status(500).json({ error: 'Failed to fetch articles' });
   }
 };
 
@@ -30,75 +75,69 @@ export const getArticle = async (req: Request, res: Response) => {
         tags: { select: { id: true, name: true } },
       },
     });
-    if (!article) return res.status(404).json({ error: "Article not found" });
+    if (!article) return res.status(404).json({ error: 'Article not found' });
     res.json(article);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch article" });
+    res.status(500).json({ error: 'Failed to fetch article' });
   }
 };
 
-// CREATE article
-export const createArticle = async (req: Request, res: Response) => {
+// Serve cover image as binary
+export const getArticleCover = async (req: Request, res: Response) => {
   try {
-    const { title, content, coverImage, tags, categoryId, authorId } = req.body;
+    const id = Number(req.params.id);
+    const article = await prisma.article.findUnique({ where: { id } });
+    if (!article || !article.coverImageBytes) return res.sendStatus(404);
 
-    const article = await prisma.article.create({
-      data: {
-        title,
-        content,
-        coverImage,
-        categoryId,
-        authorId,
-        tags: tags?.length
-          ? {
-              connectOrCreate: tags.map((tag: string) => ({
-                where: { name: tag },
-                create: { name: tag },
-              })),
-            }
-          : undefined,
-      },
-      include: { tags: { select: { id: true, name: true } } },
-    });
-
-    res.status(201).json(article);
-  } catch (err: any) {
+    res.setHeader('Content-Type', 'image/png');
+    res.send(article.coverImageBytes); // Uint8Array works
+  } catch (err) {
     console.error(err);
-    res.status(400).json({ error: err.message });
+    res.sendStatus(500);
   }
 };
 
-// UPDATE article
+// Update Article
 export const updateArticle = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const { title, content, coverImage, tags, categoryId } = req.body;
+    const { title, content, categoryId, authorId, tags } = req.body;
+    const tagList: string[] = tags ? JSON.parse(tags) : [];
 
-    const article = await prisma.article.update({
+    let coverImageBase64: string | undefined;
+    if (req.file) {
+      coverImageBase64 = `data:${
+        req.file.mimetype
+      };base64,${req.file.buffer.toString('base64')}`;
+    }
+
+    const updatedArticle = await prisma.article.update({
       where: { id },
       data: {
         title,
         content,
-        coverImage,
-        categoryId,
-        tags: tags?.length
-          ? {
-              set: [], // remove existing tags
-              connectOrCreate: tags.map((tag: string) => ({
-                where: { name: tag },
-                create: { name: tag },
-              })),
-            }
-          : undefined,
+        categoryId: Number(categoryId),
+        authorId: Number(authorId),
+        ...(coverImageBase64 && { coverImageBase64 }),
+        tags: {
+          deleteMany: {},
+          create: tagList.map((name) => ({
+            name,
+          })),
+        },
       },
-      include: { tags: { select: { id: true, name: true } } },
+      include: {
+        tags: true,
+        category: true,
+        author: true,
+      },
     });
 
-    res.json(article);
-  } catch (err: any) {
-    console.error(err);
-    res.status(400).json({ error: err.message });
+    res.json(updatedArticle);
+  } catch (error: any) {
+    console.error('Update error:', error);
+    res.status(500).json({ error: 'Failed to update article' });
   }
 };
 
@@ -107,9 +146,9 @@ export const deleteArticle = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     await prisma.article.delete({ where: { id } });
-    res.status(204).send();
+    res.sendStatus(204);
   } catch (err) {
     console.error(err);
-    res.status(400).json({ error: "Failed to delete article" });
+    res.status(400).json({ error: 'Failed to delete article' });
   }
 };

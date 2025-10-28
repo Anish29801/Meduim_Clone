@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   /* === Light Theme (Default) === */
@@ -20,15 +20,20 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: "Charter", "Georgia", "Cambria", "Times New Roman", Times, serif;
+  font-family: 'Charter', 'Georgia', 'Cambria', 'Times New Roman', Times, serif;
   line-height: 1.7;
   font-size: 1rem;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* === Typography Refinements (Medium-like) === */
-h1, h2, h3, h4, h5, h6 {
-  font-family: "GT Super", "Georgia", serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'GT Super', 'Georgia', serif;
   font-weight: 600;
   color: #111;
   margin-bottom: 0.5rem;
@@ -54,4 +59,22 @@ a:hover {
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tailwind animation class (add to tailwind.config.js) */
+
+@keyframes gradientBackground {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.animate-gradientBackground {
+  background-size: 400% 400%;
+  animation: gradientBackground 15s ease infinite;
 }
