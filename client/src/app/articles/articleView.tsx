@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 interface Article {
   id: number;
@@ -62,8 +63,10 @@ export default function ArticlePage() {
     try {
       await callApi(`/api/articles/${id}`, { method: 'DELETE' });
       setArticles((prev) => prev.filter((a) => a.id !== id));
+      toast.success('Article deleted successfully!');
     } catch (error) {
       console.error('Delete failed:', error);
+      toast.error('Failed to delete article');
     }
   };
 

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useApi } from '@/app/hooks/useApi';
 import toast from 'react-hot-toast';
 import LexicalEditor from '../components/lecxicaleditor';
+import { useRouter } from 'next/navigation';
 
 interface Tag {
   id: number;
@@ -38,14 +39,14 @@ export default function EditArticlePage({ articleId }: Props) {
   const [tags, setTags] = useState<string>('');
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [categoryId, setCategoryId] = useState<number | ''>('');
-
+  const router = useRouter();
   // Load article details
   useEffect(() => {
     async function fetchArticle() {
       try {
         const data = await callApi(`/api/articles/${articleId}`);
         console.log('Fetched article:', data); // Debug check
-
+        toast.success('Articles loaded successfully!');
         if (data) {
           setArticle(data);
           setTitle(data.title || '');
@@ -101,6 +102,7 @@ export default function EditArticlePage({ articleId }: Props) {
       });
 
       toast.success('Article updated successfully!');
+      setTimeout(() => router.push('/articles/view'), 400);
     } catch (err) {
       console.error(err);
       toast.error('Update failed!');

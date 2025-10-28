@@ -84,7 +84,7 @@ export default function ArticleForm() {
       });
 
       toast.success('Article created successfully!');
-      setTimeout(() => router.push('/dashboard'), 200);
+      setTimeout(() => router.push('/dashboard'), 400);
     } catch (err: any) {
       toast.error(err?.error || 'Failed to create article');
     } finally {
