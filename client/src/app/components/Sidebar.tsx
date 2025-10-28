@@ -10,19 +10,11 @@ import {
 } from "@heroicons/react/24/outline";
 
 const navigation = [
-<<<<<<< HEAD
   { name: "Home", icon: HomeIcon, href: "/", current: true },
   { name: "Library", icon: BookOpenIcon, href: "/dashboard", current: false },
   { name: "Profile", icon: UserIcon, href: "/profile", current: false },
   { name: "Stories", icon: NewspaperIcon, href: "/stories", current: false },
   { name: "Stats", icon: ChartBarIcon, href: "/stats", current: false },
-=======
-  { name: "Home", icon: HomeIcon, href: "#", current: true },
-  { name: "Library", icon: BookOpenIcon, href: "/dashboard", current: false },
-  { name: "Profile", icon: UserIcon, href: "#", current: false },
-  { name: "Stories", icon: NewspaperIcon, href: "#", current: false },
-  { name: "Stats", icon: ChartBarIcon, href: "#", current: false },
->>>>>>> dea8136ff98feacffc7171ae902259a32ee00209
 ];
 
 function classNames(...classes: string[]) {
@@ -31,12 +23,14 @@ function classNames(...classes: string[]) {
 
 export default function Sidebar() {
   return (
-    <aside className="fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 z-40">
-      <div className="h-full p-5 flex flex-col">
+    <aside className="fixed top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 z-40">
+      <div className="h-full flex flex-col p-5">
+        {/* Title */}
         <h2 className="text-lg font-semibold text-gray-900 mb-6 font-serif">
           Dashboard
         </h2>
 
+        {/* Nav Links */}
         <nav className="space-y-1">
           {navigation.map((item) => (
             <a
@@ -55,6 +49,7 @@ export default function Sidebar() {
           ))}
         </nav>
 
+        {/* Following Section */}
         <div className="mt-6 border-t pt-4">
           <div className="flex items-center gap-x-2 px-3 text-gray-600 text-sm font-semibold">
             <UserGroupIcon className="h-5 w-5" />
