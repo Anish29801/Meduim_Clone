@@ -30,6 +30,30 @@ export const getUser = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch user" });
   }
 };
+// ✅ GET only user's name and avatar
+export const getUserNameAndImage = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid user ID" });
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        fullName: true,
+        avatar: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (err: any) {
+    console.error("Failed to fetch user name and image:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
 
 // UPDATE user (only if updatePassword === "root")
 export const updateUser = async (req: Request, res: Response) => {
