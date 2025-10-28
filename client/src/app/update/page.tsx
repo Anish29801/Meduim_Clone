@@ -1,146 +1,97 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
-import { useApi } from "../hooks/useApi";
-import { UpdateUserProps, User } from "../type";
 
-export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [selectedAvatar, setSelectedAvatar] = useState<"male" | "female" | "">("");
-  const { callApi, loading } = useApi();
+interface UpdateUserProps {
+  onSuccess?: () => void;
+}
 
-  // ✅ Load user from localStorage or API
-  useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) {
-      const parsedUser = JSON.parse(stored);
-      setUser(parsedUser);
-      setSelectedAvatar(parsedUser.avatar || "");
-    } else if (userId) {
-      callApi(`/api/users/${userId}`)
-        .then((data) => {
-          setUser(data);
-          setSelectedAvatar(data.avatar || "");
-        })
-        .catch(() => toast.error("Failed to load user data ❌"));
-    }
-  }, [userId, callApi]);
+export default function UpdateUser({ onSuccess }: UpdateUserProps) {
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    avatar: "male",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return toast.error("No user found. Please log in again.");
 
     try {
-      const payload = {
-        fullName: user.fullName,
-        bio: user.bio,
-        role: user.role || "USER",
-        avatar: selectedAvatar,
-        gender: selectedAvatar === "male" ? "Male" : "Female",
-        updatePassword: "root", // must match backend
-      };
-
-      const updatedUser = await callApi(`/api/users/${user.id}`, {
+      const response = await fetch("/api/users/update", {
         method: "PUT",
-        data: payload,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
       });
 
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      toast.success("Profile updated successfully ✅");
+      if (response.ok) {
+        const updatedUser = await response.json();
 
-      if (onUpdate) onUpdate();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || "Update failed ❌");
+        // ✅ Save to localStorage so Navbar can read updated avatar
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+
+        toast.success("Profile updated successfully!");
+        if (onSuccess) onSuccess(); // ✅ Trigger Navbar refresh callback
+      } else {
+        toast.error("Failed to update profile.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred while updating.");
     }
   };
 
-  if (!user) {
-    // ✅ Skeleton loader
-    return (
-      <div className="animate-pulse space-y-3">
-        <div className="h-6 bg-gray-200 rounded w-1/3" />
-        <div className="h-10 bg-gray-200 rounded" />
-        <div className="h-10 bg-gray-200 rounded" />
-        <div className="h-24 bg-gray-200 rounded" />
-        <div className="h-10 bg-gray-200 rounded" />
-      </div>
-    );
-  }
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-700">Update Profile</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">Update Profile</h2>
 
-      <input
-        type="text"
-        name="username"
-        placeholder="Username"
-        className="w-full px-3 py-2 border rounded-lg"
-        value={user.username}
-        onChange={(e) => setUser({ ...user, username: e.target.value })}
-        required
-      />
-
-      <input
-        type="text"
-        name="fullName"
-        placeholder="Full Name"
-        className="w-full px-3 py-2 border rounded-lg"
-        value={user.fullName}
-        onChange={(e) => setUser({ ...user, fullName: e.target.value })}
-        required
-      />
-
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        className="w-full px-3 py-2 border rounded-lg"
-        value={user.email}
-        onChange={(e) => setUser({ ...user, email: e.target.value })}
-        required
-      />
-
-      <textarea
-        name="bio"
-        placeholder="Bio"
-        rows={3}
-        className="w-full px-3 py-2 border rounded-lg"
-        value={user.bio || ""}
-        onChange={(e) => setUser({ ...user, bio: e.target.value })}
-      />
-
-      {/* Avatar selection */}
       <div>
-        <p className="text-sm text-gray-600 mb-1">Choose Avatar:</p>
-        <div className="flex gap-4">
-          {["male", "female"].map((type) => (
-            <div
-              key={type}
-              className={`cursor-pointer p-1 border rounded-full ${
-                selectedAvatar === type ? "border-indigo-500" : "border-gray-300"
-              }`}
-              onClick={() => {
-                setSelectedAvatar(type as "male" | "female");
-                setUser({ ...user, gender: type, avatar: type });
-              }}
-            >
-              <img src={`/${type}.svg`} alt={type} className="w-12 h-12 rounded-full" />
-            </div>
-          ))}
-        </div>
+        <label className="block text-sm font-medium text-gray-700">Username</label>
+        <input
+          type="text"
+          name="username"
+          value={form.username}
+          onChange={handleChange}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-gray-400 focus:border-gray-400"
+          required
+        />
       </div>
 
-      {/* Hidden updatePassword to satisfy backend */}
-      <input type="hidden" name="updatePassword" value="root" />
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Email</label>
+        <input
+          type="email"
+          name="email"
+          value={form.email}
+          onChange={handleChange}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-gray-400 focus:border-gray-400"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Avatar</label>
+        <select
+          name="avatar"
+          value={form.avatar}
+          onChange={handleChange}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-gray-400 focus:border-gray-400"
+        >
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
 
       <button
         type="submit"
-        disabled={loading}
-        className="w-full py-2.5 mt-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition-all"
+        className="w-full bg-gray-900 text-white py-2 rounded-md hover:bg-gray-800 transition"
       >
-        {loading ? "Updating..." : "Update Profile"}
+        Save Changes
       </button>
     </form>
   );

@@ -3,26 +3,27 @@
 import { useState, useEffect } from "react";
 import {
   Disclosure,
-  Dialog,
   Menu,
   MenuButton,
   MenuItem,
   MenuItems,
+  Dialog,
+  DialogPanel,
 } from "@headlessui/react";
 import {
   BellIcon,
   MagnifyingGlassIcon,
   PencilSquareIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation'; // ✅ for redirect
-import male from '@/../public/male.svg';
-import female from '@/../public/female.svg';
-import Sidebar from './Sidebar';
-import SignUp from '../signup/page';
-import Login from '../login/page';
-import UpdateUser from '../update/page';
+} from "@heroicons/react/24/outline";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import male from "@/../public/male.svg";
+import female from "@/../public/female.svg";
+import Sidebar from "./Sidebar";
+import SignUp from "../signup/page";
+import Login from "../login/page";
+import UpdateUser from "../update/page";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -55,12 +56,14 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Fixed Sidebar */}
+      {/* Sidebar */}
       <Sidebar />
 
+      {/* Navbar */}
       <Disclosure as="nav" className="bg-white border-b border-gray-200 ml-64">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative flex h-16 items-center justify-between">
+            {/* Left */}
             <div className="flex flex-1 items-center justify-start">
               <a href="/" className="flex items-center space-x-2">
                 <span className="font-serif text-xl font-semibold text-gray-900">
@@ -80,6 +83,7 @@ export default function Navbar() {
               </div>
             </div>
 
+            {/* Right */}
             <div className="flex items-center space-x-4">
               {!isLoggedIn ? (
                 <>
@@ -99,7 +103,7 @@ export default function Navbar() {
               ) : (
                 <>
                   <button
-                    onClick={() => router.push('/dashboard')}
+                    onClick={() => router.push("/dashboard")}
                     className="hidden sm:inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100"
                   >
                     <PencilSquareIcon className="h-5 w-5 mr-1" />
@@ -156,6 +160,58 @@ export default function Navbar() {
           </div>
         </div>
       </Disclosure>
+
+      {/* --- MODALS --- */}
+      <Dialog open={showLogin} onClose={() => setShowLogin(false)} className="relative z-50">
+        <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg relative">
+            <button
+              onClick={() => setShowLogin(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </button>
+            <Login />
+          </DialogPanel>
+        </div>
+      </Dialog>
+
+      <Dialog open={showSignUp} onClose={() => setShowSignUp(false)} className="relative z-50">
+        <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg relative">
+            <button
+              onClick={() => setShowSignUp(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </button>
+            <SignUp />
+          </DialogPanel>
+        </div>
+      </Dialog>
+
+      {/* ✅ Update form modal */}
+      <Dialog open={showUpdate} onClose={() => setShowUpdate(false)} className="relative z-50">
+        <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel className="bg-white rounded-lg p-6 max-w-lg w-full shadow-lg relative">
+            <button
+              onClick={() => setShowUpdate(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </button>
+            <UpdateUser
+              onSuccess={() => {
+                setShowUpdate(false);
+                window.location.reload(); // ✅ Refresh page after successful update
+              }}
+            />
+          </DialogPanel>
+        </div>
+      </Dialog>
     </>
   );
 }

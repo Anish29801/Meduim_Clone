@@ -1,5 +1,7 @@
 'use client';
+
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { LoginProps } from '../type';
 import { useApi } from '../hooks/useApi';
@@ -7,6 +9,7 @@ import { useApi } from '../hooks/useApi';
 export default function Login({ onSubmit }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const { error, loading, callApi } = useApi();
+  const router = useRouter(); // ✅ router for redirect
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -22,20 +25,23 @@ export default function Login({ onSubmit }: LoginProps) {
     }
 
     try {
-      // ✅ Only pass the endpoint — baseURL comes from useApi (http://localhost:5000)
+      // ✅ Only endpoint — baseURL comes from useApi()
       const response = await callApi('/api/users/login', {
         method: 'POST',
         data: { email, password },
       });
 
-      // ✅ Store token or user data as needed
+      // ✅ Save user and token to localStorage
+      if (response?.token) localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response));
-      if (response.token) localStorage.setItem('token', response.token);
 
       toast.success('Login successful 🎉');
 
       // Optional callback
       if (onSubmit) onSubmit(email, password, confirmPassword);
+
+      // ✅ Redirect to /dashboard
+      router.push('/dashboard');
     } catch (err: any) {
       console.error('Login error:', err);
       toast.error(error || 'Login failed. Try again ❌');
@@ -80,13 +86,6 @@ export default function Login({ onSubmit }: LoginProps) {
           className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400 outline-none"
           required
         />
-        <button
-          type="button"
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
-          onClick={() => setShowPassword(!showPassword)}
-        >
-          {showPassword ? 'Hide' : 'Show'}
-        </button>
       </div>
 
       {/* Submit */}
