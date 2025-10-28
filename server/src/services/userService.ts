@@ -1,10 +1,14 @@
-import prisma from "../prisma";
-import bcrypt from "bcrypt";
-import { CreateUserInput } from "../types/types";
+import prisma from '../prisma';
+import bcrypt from 'bcrypt';
+import { CreateUserInput } from '../types/types';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET as string; // load from dotenv.config()
 
 // ===== Create / Register User =====
 export const createUser = async (data: CreateUserInput) => {
-  const { username, email, password, fullName, bio, avatar, gender, role } = data;
+  const { username, email, password, fullName, bio, avatar, gender, role } =
+    data;
 
   if (!email || !password) {
     throw new Error("Email and password are required");
@@ -12,7 +16,7 @@ export const createUser = async (data: CreateUserInput) => {
 
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({ where: { email } });
-  if (existingUser) throw new Error("User already exists");
+  if (existingUser) throw new Error('User already exists');
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -30,7 +34,7 @@ export const createUser = async (data: CreateUserInput) => {
       bio,
       avatar,
       gender,
-      role: role || "USER",
+      role: role || 'USER',
     },
   });
 
@@ -44,11 +48,20 @@ export const loginUser = async (email: string, password: string) => {
   if (!email || !password) throw new Error("Email and password are required");
 
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) throw new Error("User not found");
-
+  if (!user) throw new Error('User not found');
   const isValid = await bcrypt.compare(password, user.password);
-  if (!isValid) throw new Error("Invalid credentials");
+  if (!isValid) throw new Error('Invalied credentials');
+  const token = jwt.sign(
+    {
+      id: user.id,
+      role: user.role,
+    },
+    JWT_SECRET,
+    {
+      expiresIn: '1d',
+    }
+  );
 
   const { password: _, ...safeUser } = user;
-  return safeUser;
+  return { ...safeUser, token };
 };
