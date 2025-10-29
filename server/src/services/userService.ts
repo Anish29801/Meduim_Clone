@@ -1,3 +1,4 @@
+//src/app/Services/userService.ts
 import prisma from '../prisma';
 import bcrypt from 'bcrypt';
 import { CreateUserInput } from '../types/types';
@@ -35,6 +36,7 @@ export const createUser = async (data: CreateUserInput) => {
       avatar,
       gender,
       role: role || 'USER',
+      status: 'ACTIVE',
     },
   });
 
@@ -49,6 +51,11 @@ export const loginUser = async (email: string, password: string) => {
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) throw new Error('User not found');
+
+  // block inactive users
+  if (user.status === 'INACTIVE') {
+    throw new Error('Your account is inactive. Please contact admin.');
+  }
   const isValid = await bcrypt.compare(password, user.password);
   if (!isValid) throw new Error('Invalied credentials');
   const token = jwt.sign(
