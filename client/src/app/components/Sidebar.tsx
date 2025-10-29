@@ -75,7 +75,12 @@ export default function Sidebar({
   const adminNavigation = [
     { name: 'ArticleDashboard', icon: HomeIcon, href: '/admin/dashboard' },
     { name: 'Library', icon: BookOpenIcon, href: '/dashboard', current: false },
-    { name: 'Manage Users', icon: ShieldCheckIcon, href: '' },
+    { name: 'ArticleLists', icon: ShieldCheckIcon, href: '/articles/view' },
+    {
+      name: 'AdminArticlesPage',
+      icon: ShieldCheckIcon,
+      href: '/admin/articles',
+    },
     { name: 'Reports', icon: ChartBarIcon, href: '' },
     { name: 'Settings', icon: Cog6ToothIcon, href: '' },
   ];
