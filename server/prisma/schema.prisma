@@ -23,6 +23,7 @@ model User {
   avatar   String?
   gender   String?
   role     Role      @default(USER)
+  status   String    @default("ACTIVE") 
 
   // Relations
   bookmarks Article[] @relation("Bookmarks")  // Many-to-many

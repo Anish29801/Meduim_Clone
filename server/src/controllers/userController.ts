@@ -1,6 +1,9 @@
-import { Request, Response } from "express";
-import prisma from "../prisma";
-import { createUser as registerUser, loginUser } from "../services/userService";
+//src/app/controllers/userController.ts
+import { Request, Response } from 'express';
+import prisma from '../prisma';
+import { createUser as registerUser, loginUser } from '../services/userService';
+import { getDashboardStatsService } from '../services/adminService';
+
 
 // ===== CRUD Routes =====
 
@@ -11,7 +14,7 @@ export const getUsers = async (_req: Request, res: Response) => {
     res.json(users);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch users" });
+    res.status(500).json({ error: 'Failed to fetch users' });
   }
 };
 
@@ -19,22 +22,22 @@ export const getUsers = async (_req: Request, res: Response) => {
 export const getUser = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid user ID" });
+    if (isNaN(id)) return res.status(400).json({ error: 'Invalid user ID' });
 
     const user = await prisma.user.findUnique({ where: { id } });
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
     res.json(user);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch user" });
+    res.status(500).json({ error: 'Failed to fetch user' });
   }
 };
 // ✅ GET only user's name and avatar
 export const getUserNameAndImage = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid user ID" });
+    if (isNaN(id)) return res.status(400).json({ error: 'Invalid user ID' });
 
     const user = await prisma.user.findUnique({
       where: { id },
@@ -45,13 +48,13 @@ export const getUserNameAndImage = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: 'User not found' });
     }
 
     res.status(200).json(user);
   } catch (err: any) {
-    console.error("Failed to fetch user name and image:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error('Failed to fetch user name and image:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -59,13 +62,16 @@ export const getUserNameAndImage = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid user ID" });
+    if (isNaN(id)) return res.status(400).json({ error: 'Invalid user ID' });
 
-    const { fullName, bio, role, avatar, gender, password, updatePassword } = req.body;
+    const { fullName, bio, role, avatar, gender, password, updatePassword } =
+      req.body;
 
     // Security check
-    if (updatePassword !== "root") {
-      return res.status(403).json({ error: "Unauthorized: invalid update password" });
+    if (updatePassword !== 'root') {
+      return res
+        .status(403)
+        .json({ error: 'Unauthorized: invalid update password' });
     }
 
     const updatedUser = await prisma.user.update({
@@ -76,7 +82,7 @@ export const updateUser = async (req: Request, res: Response) => {
     res.json(updatedUser);
   } catch (err: any) {
     console.error(err);
-    res.status(400).json({ error: err.message || "Failed to update user" });
+    res.status(400).json({ error: err.message || 'Failed to update user' });
   }
 };
 
@@ -84,13 +90,47 @@ export const updateUser = async (req: Request, res: Response) => {
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid user ID" });
+    if (isNaN(id)) return res.status(400).json({ error: 'Invalid user ID' });
 
     await prisma.user.delete({ where: { id } });
     res.status(204).send();
   } catch (err: any) {
     console.error(err);
-    res.status(400).json({ error: err.message || "Failed to delete user" });
+    res.status(400).json({ error: err.message || 'Failed to delete user' });
+  }
+};
+
+// ===== Update User Status =====
+export const updateUserStatus = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const { status } = req.body; // "ACTIVE" or "INACTIVE"
+
+    if (!['ACTIVE', 'INACTIVE'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: { status },
+    });
+
+    res.status(200).json({ message: `User status updated to ${status}`, user });
+  } catch (err: any) {
+    console.error('Failed to update user status:', err);
+    res.status(400).json({ error: err.message });
+  }
+};
+
+
+//admin Cards
+export const getDashboardStats = async (_req: Request, res: Response) => {
+  try {
+    const stats = await getDashboardStatsService();
+    res.status(200).json(stats);
+  } catch (error: any) {
+    console.error('Error in getDashboardStats controller:', error.message);
+    res.status(500).json({ error: 'Failed to fetch dashboard stats' });
   }
 };
 
@@ -118,4 +158,3 @@ export const login = async (req: Request, res: Response) => {
     res.status(400).json({ error: err.message });
   }
 };
-
