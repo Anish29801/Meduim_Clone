@@ -15,7 +15,8 @@ interface Comment {
 
 export default function PostCard({ post }: { post: any }) {
   const { callApi } = useApi<Comment[]>();
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentCount, setCommentCount] = useState(0);
+
   const avatarSrc =
     post?.authorAvatar && post.authorAvatar.trim() !== ""
       ? post.authorAvatar.startsWith("http")
@@ -29,7 +30,7 @@ export default function PostCard({ post }: { post: any }) {
     const fetchComments = async () => {
       try {
         const res = await callApi(`/api/comments?articleId=${post.id}`);
-        setComments(res);
+        setCommentCount(res.length || 0);
       } catch (err) {
         console.error("Failed to load comments", err);
       }
@@ -65,26 +66,10 @@ export default function PostCard({ post }: { post: any }) {
         </Link>
 
         {/* META INFO */}
-        <div className="flex items-center text-gray-500 text-xs gap-3 mb-4">
+        <div className="flex items-center text-gray-500 text-xs gap-3">
           <span>{post.daysAgo ? `${post.daysAgo}d ago` : "Recently"}</span>
           <span>👁 {post.views ?? 0}</span>
-          <span>💬 {comments.length}</span>
-        </div>
-
-        {/* COMMENTS SECTION */}
-        <div className="border-t border-gray-100 pt-3">
-          {comments.length > 0 && (
-            <div className="space-y-2 mb-3">
-              {comments.map((c) => (
-                <div
-                  key={c.id}
-                  className="text-sm bg-gray-50 p-2 rounded-md border border-gray-100"
-                >
-                  <strong>{c.userName}</strong>: {c.content}
-                </div>
-              ))}
-            </div>
-          )}
+          <span>💬 {commentCount}</span>
         </div>
       </div>
     </div>
