@@ -7,6 +7,7 @@ import {
   deleteArticle,
   getArticleCover,
   updateArticle,
+  toggleArticleStatus,
 } from '../controllers/articleController';
 
 const router = Router();
@@ -15,6 +16,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // Routes
 router.get('/', getArticles);
+router.put('/:id/status', toggleArticleStatus);
 router.get('/:id', getArticle);
 router.get('/:id/cover', getArticleCover);
 router.post('/', upload.single('coverImage'), createArticle);
