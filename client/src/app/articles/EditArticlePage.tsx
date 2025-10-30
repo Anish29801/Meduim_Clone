@@ -1,10 +1,12 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 import { useApi } from '@/app/hooks/useApi';
 import toast from 'react-hot-toast';
 import LexicalEditor from '../components/lecxicaleditor';
 import { useRouter } from 'next/navigation';
 
+// 🧩 Interfaces
 interface Tag {
   id: number;
   name: string;
@@ -33,20 +35,18 @@ export default function EditArticlePage({ articleId }: Props) {
   const { callApi, loading } = useApi<Article>();
   const [article, setArticle] = useState<Article | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState<string>('');
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [categoryId, setCategoryId] = useState<number | ''>('');
   const router = useRouter();
-  // Load article details
+
+  // 🔹 Load article details
   useEffect(() => {
     async function fetchArticle() {
       try {
         const data = await callApi(`/api/articles/${articleId}`);
-        console.log('Fetched article:', data); // Debug check
-        toast.success('Articles loaded successfully!');
         if (data) {
           setArticle(data);
           setTitle(data.title || '');
@@ -55,33 +55,38 @@ export default function EditArticlePage({ articleId }: Props) {
           setTags(
             (data.tags && data.tags.map((t: Tag) => t.name).join(', ')) || ''
           );
+          toast.success('Article loaded successfully!');
         }
       } catch (err) {
         console.error('Failed to fetch article', err);
-        toast.error('Failed to load article');
+        toast.error('Failed to load article ❌');
       }
     }
 
     if (articleId) fetchArticle();
   }, [articleId, callApi]);
 
-  // Load all categories
+  // 🔹 Load categories
   useEffect(() => {
     async function fetchCategories() {
-      const catData = await callApi('/api/categories');
-      setCategories(catData);
+      try {
+        const catData = await callApi('/api/categories');
+        setCategories(catData);
+      } catch {
+        toast.error('Failed to load categories ❌');
+      }
     }
     fetchCategories();
   }, [callApi]);
 
-  // Handle image upload
+  // 🔹 Handle image upload
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setCoverImage(e.target.files[0]);
     }
   };
 
-  // Update Article
+  // 🔹 Update article
   const handleUpdate = async () => {
     try {
       const formData = new FormData();
@@ -91,7 +96,7 @@ export default function EditArticlePage({ articleId }: Props) {
       formData.append('authorId', String(article?.authorId || 1));
       formData.append(
         'tags',
-        JSON.stringify(tags.split(',').map((t) => t.trim()))
+        JSON.stringify(tags.split(',').map((t: string) => t.trim()))
       );
       if (coverImage) formData.append('coverImage', coverImage);
 
@@ -101,17 +106,18 @@ export default function EditArticlePage({ articleId }: Props) {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      toast.success('Article updated successfully!');
+      toast.success('Article updated successfully 🎉');
       setTimeout(() => router.push('/articles/view'), 400);
     } catch (err) {
       console.error(err);
-      toast.error('Update failed!');
+      toast.error('Update failed ❌');
     }
   };
 
   if (loading || !article)
     return <p className="text-center mt-10">Loading article...</p>;
 
+  // 🔹 JSX
   return (
     <div className="max-w-3xl mx-auto p-8 bg-white rounded-2xl shadow-xl space-y-6">
       <h1 className="text-2xl font-bold text-indigo-700">✏️ Edit Article</h1>
@@ -125,12 +131,12 @@ export default function EditArticlePage({ articleId }: Props) {
         placeholder="Enter article title"
       />
 
-      {/*Content */}
+      {/* Content */}
       <div className="border-2 border-gray-300 rounded-xl p-2">
         <LexicalEditor initialContent={content} onChange={setContent} />
       </div>
 
-      {/*Category Dropdown */}
+      {/* Category Dropdown */}
       <select
         value={categoryId}
         onChange={(e) => setCategoryId(Number(e.target.value))}
@@ -153,10 +159,10 @@ export default function EditArticlePage({ articleId }: Props) {
         placeholder="Enter tags (comma separated)"
       />
 
-      {/* Tag Chips Preview */}
+      {/* Tag Preview */}
       {tags && (
         <div className="flex flex-wrap gap-2">
-          {tags.split(',').map((tag, i) => (
+          {tags.split(',').map((tag: string, i: number) => (
             <span
               key={i}
               className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm"
@@ -167,7 +173,7 @@ export default function EditArticlePage({ articleId }: Props) {
         </div>
       )}
 
-      {/*Current Image */}
+      {/* Current Image */}
       {article.coverImageBase64 && (
         <div className="mt-4">
           <p className="text-gray-600 text-sm mb-2">Current Cover:</p>

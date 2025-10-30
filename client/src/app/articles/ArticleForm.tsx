@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
 import { useApi } from '@/app/hooks/useApi';
 import LexicalEditor from '../components/lecxicaleditor';
+
 interface Category {
   id: number;
   name: string;
@@ -16,7 +17,7 @@ export default function ArticleForm() {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [coverFile, setCoverFile] = useState<File | null>(null); // binary file
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
@@ -37,19 +38,17 @@ export default function ArticleForm() {
     fetchCategories();
   }, [callApi]);
 
-  // File selection
+  // File selection handlers
   const handleFileChange = (file: File) => setCoverFile(file);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0])
-      handleFileChange(e.target.files[0]);
+    if (e.target.files && e.target.files[0]) handleFileChange(e.target.files[0]);
   };
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0])
       handleFileChange(e.dataTransfer.files[0]);
   };
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) =>
-    e.preventDefault();
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => e.preventDefault();
   const removeCoverImage = () => setCoverFile(null);
 
   // Tags
@@ -58,8 +57,7 @@ export default function ArticleForm() {
     if (tag && !tags.includes(tag)) setTags([...tags, tag]);
     setNewTag('');
   };
-  const handleRemoveTag = (tag: string) =>
-    setTags(tags.filter((t) => t !== tag));
+  const handleRemoveTag = (tag: string) => setTags(tags.filter((t) => t !== tag));
 
   // Save article
   const handleSave = async () => {
@@ -74,8 +72,8 @@ export default function ArticleForm() {
       formData.append('content', content);
       formData.append('categoryId', categoryId.toString());
       formData.append('authorId', '1'); // replace with logged-in user ID
-      formData.append('tags', JSON.stringify(tags)); // form data allways accepts string data
-      formData.append('coverImage', coverFile); // append binary
+      formData.append('tags', JSON.stringify(tags));
+      formData.append('coverImage', coverFile);
 
       await callApi('/api/articles', {
         method: 'POST',
@@ -98,9 +96,7 @@ export default function ArticleForm() {
 
       {/* Title */}
       <div className="flex flex-col">
-        <label className="mb-1 text-indigo-900 font-semibold text-sm">
-          Title
-        </label>
+        <label className="mb-1 text-indigo-900 font-semibold text-sm">Title</label>
         <input
           type="text"
           placeholder="Article Title"
@@ -112,9 +108,7 @@ export default function ArticleForm() {
 
       {/* Category */}
       <div className="flex flex-col">
-        <label className="mb-1 text-indigo-900 font-semibold text-sm">
-          Category
-        </label>
+        <label className="mb-1 text-indigo-900 font-semibold text-sm">Category</label>
         <select
           value={categoryId ?? ''}
           onChange={(e) =>
@@ -132,9 +126,7 @@ export default function ArticleForm() {
       </div>
 
       {/* Cover Image */}
-      <label className="mb-1 text-indigo-900 font-semibold text-sm">
-        Cover Image
-      </label>
+      <label className="mb-1 text-indigo-900 font-semibold text-sm">Cover Image</label>
       <div
         className="border-2 border-dashed border-indigo-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-400 transition-all duration-300 relative flex flex-col items-center justify-center bg-white/30 backdrop-blur-sm"
         onDrop={handleDrop}
@@ -174,25 +166,10 @@ export default function ArticleForm() {
       </div>
 
       {/* Tags */}
-      <div className="flex flex-wrap gap-2">
-        {tags.map((tag) => (
-          <div
-            key={tag}
-            className="bg-purple-200 text-purple-800 px-3 py-1 rounded-full flex items-center gap-1 shadow-sm"
-          >
-            {tag}{' '}
-            <button type="button" onClick={() => handleRemoveTag(tag)}>
-              ×
-            </button>
-          </div>
-        ))}
-      </div>
       <div className="space-y-3">
         <div className="flex gap-2 items-end">
           <div className="flex flex-col flex-1">
-            <label className="mb-1 text-indigo-900 font-semibold text-sm">
-              Tags
-            </label>
+            <label className="mb-1 text-indigo-900 font-semibold text-sm">Tags</label>
             <input
               type="text"
               placeholder="Add tag"
@@ -211,7 +188,7 @@ export default function ArticleForm() {
           </button>
         </div>
 
-        {/* Tag List */}
+        {/* Single Tag List */}
         <div className="flex flex-wrap gap-2">
           {tags.map((tag, index) => (
             <div
@@ -238,7 +215,7 @@ export default function ArticleForm() {
         </div>
       </div>
 
-      {/* Save */}
+      {/* Save Button */}
       <button
         onClick={handleSave}
         disabled={isSaving}
