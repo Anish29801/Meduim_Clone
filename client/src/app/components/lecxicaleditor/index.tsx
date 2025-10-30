@@ -1,41 +1,37 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
-import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
-import { ContentEditable } from '@lexical/react/LexicalContentEditable';
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
-import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
-import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
-import { HeadingNode, QuoteNode } from '@lexical/rich-text';
-import { ListItemNode, ListNode } from '@lexical/list';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { EditorState } from 'lexical';
-import Toolbox from './Toolbar';
-import { LexicalEditorProps } from '@/app/type';
-
+import { useEffect } from "react";
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { ListItemNode, ListNode } from "@lexical/list";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { EditorState } from "lexical";
+import Toolbox from "./Toolbar";
+import { LexicalEditorProps } from "@/app/type";
+import { $generateHtmlFromNodes } from "@lexical/html";
 export default function LexicalEditor({
-  initialContent = '',
+  initialContent = "",
   onChange,
   readOnly = false,
 }: LexicalEditorProps) {
   const initialConfig = {
-    namespace: 'AdvancedEditor',
+    namespace: "AdvancedEditor",
     editable: !readOnly,
     theme: {},
     onError(error: any) {
-      console.error('Lexical error:', error);
+      console.error("Lexical error:", error);
     },
     nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode],
   };
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <EditorContent
-        initialContent={initialContent}
-        onChange={onChange}
-        readOnly={readOnly}
-      />
+      <EditorContent initialContent={initialContent} onChange={onChange} readOnly={readOnly} />
     </LexicalComposer>
   );
 }
@@ -67,29 +63,29 @@ function EditorContent({
                 {
                   detail: 0,
                   format: 0,
-                  mode: 'normal',
-                  style: '',
+                  mode: "normal",
+                  style: "",
                   text: initialContent,
-                  type: 'text',
+                  type: "text",
                   version: 1,
                 },
               ],
               direction: null,
-              format: '',
+              format: "",
               indent: 0,
-              type: 'paragraph',
+              type: "paragraph",
               version: 1,
               textFormat: 0,
-              textStyle: '',
+              textStyle: "",
             },
           ],
           direction: null,
-          format: '',
+          format: "",
           indent: 0,
-          type: 'root',
+          type: "root",
           version: 1,
           textFormat: 0,
-          textStyle: '',
+          textStyle: "",
         },
       };
       const editorState = editor.parseEditorState(fallbackJSON);
@@ -99,8 +95,8 @@ function EditorContent({
 
   const handleChange = (editorState: EditorState) => {
     editorState.read(() => {
-      const json = editorState.toJSON();
-      onChange?.(JSON.stringify(json));
+      const html = $generateHtmlFromNodes(editor, null);
+      onChange?.(html);
     });
   };
 
@@ -112,9 +108,7 @@ function EditorContent({
           contentEditable={
             <ContentEditable className="min-h-[150px] min-w-[700px] outline-none px-2 py-1 text-[16px]" />
           }
-          placeholder={
-            <div className="text-gray-400">Start writing your article...</div>
-          }
+          placeholder={<div className="text-gray-400">Start writing your article...</div>}
           ErrorBoundary={LexicalErrorBoundary}
         />
       </div>

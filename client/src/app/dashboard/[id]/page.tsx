@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import React, { use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -8,7 +8,6 @@ import { useApi } from "@/app/hooks/useApi";
 import { Article } from "@/app/type";
 import male from "@/app/avatar/male.svg";
 import female from "@/app/avatar/female.svg";
-
 
 type PostPageProps = {
   params: Promise<{ id: string }>;
@@ -114,7 +113,9 @@ export default function PostPage({ params }: PostPageProps) {
       )}
 
       <article className="prose prose-gray max-w-none text-gray-800 mb-10">
-        <p>{article.content}</p>
+        <p>
+          <span dangerouslySetInnerHTML={{ __html: article.content }}></span>
+        </p>
       </article>
 
       {/* 🟨 Comments Section */}
