@@ -58,11 +58,9 @@ export default function PostCard({ post }: { post: any }) {
 
         {/* POST TITLE + DESCRIPTION */}
         <Link href={`/dashboard/${post.id}`}>
-          <h2 className="text-xl font-semibold mb-1 hover:underline">
-            {post.title}
-          </h2>
+          <h2 className="text-xl font-semibold mb-1 hover:underline">{post.title}</h2>
           <p className="text-gray-700 text-sm mb-3 line-clamp-2">
-            {post.description}
+            <span dangerouslySetInnerHTML={{ __html: post.content }}></span>
           </p>
         </Link>
 
