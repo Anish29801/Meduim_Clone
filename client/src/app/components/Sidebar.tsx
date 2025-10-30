@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { jwtDecode } from 'jwt-decode';
+
 import {
   HomeIcon,
   BookOpenIcon,
@@ -33,34 +33,32 @@ export default function Sidebar({
 }) {
   const [role, setRole] = useState<string>('USER');
 
-  //Read token and extract role
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
+    const userData = localStorage.getItem('user');
+    if (userData) {
       try {
-        const decoded: DecodedToken = jwtDecode(token);
-        setRole(decoded.role);
+        const user = JSON.parse(userData);
+        if (user.role) {
+          setRole(user.role);
+        }
       } catch (err) {
-        console.error('Invalid token', err);
+        console.error('Invalid user JSON in localStorage', err);
       }
     }
   }, []);
 
-  // Define separate menus
-  // const userNavigation = [
-  //   { name: 'Home', icon: HomeIcon, href: '/home' },
-  //   { name: 'Library', icon: BookOpenIcon, href: '/library' },
-  //   { name: 'Profile', icon: UserIcon, href: '/profile' },
-  //   { name: 'Stories', icon: NewspaperIcon, href: '/stories' },
-  //   { name: 'Stats', icon: ChartBarIcon, href: '/stats' },
-  // ];
-
-  // const adminNavigation = [
-  //   { name: 'Dashboard', icon: HomeIcon, href: '/admin' },
-  //   { name: 'Manage Users', icon: ShieldCheckIcon, href: '/admin/users' },
-  //   { name: 'Reports', icon: ChartBarIcon, href: '/admin/reports' },
-  //   { name: 'Settings', icon: Cog6ToothIcon, href: '/admin/settings' },
-  // ];
+  //Read token and extract role
+  // useEffect(() => {
+  //   const token = localStorage.getItem('token');
+  //   if (token) {
+  //     try {
+  //       const decoded: DecodedToken = jwtDecode(token);
+  //       setRole(decoded.role);
+  //     } catch (err) {
+  //       console.error('Invalid token', err);
+  //     }
+  //   }
+  // }, []);
 
   const userNavigation = [
     { name: 'Home', icon: HomeIcon, href: '#', current: true },
