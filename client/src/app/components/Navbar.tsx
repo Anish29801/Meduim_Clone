@@ -37,7 +37,8 @@ export default function Navbar() {
   const [showSignUp, setShowSignUp] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
 
-  useEffect(() => {
+  // ✅ Load and monitor localStorage user
+  const loadUser = () => {
     try {
       const userData = localStorage.getItem("user");
       if (userData && userData !== "undefined" && userData !== "null") {
@@ -45,25 +46,46 @@ export default function Navbar() {
         setIsLoggedIn(true);
         setUserAvatar(user.avatar);
       } else {
-        localStorage.removeItem("user");
+        setIsLoggedIn(false);
+        setUserAvatar(null);
       }
-    } catch (error) {
-      console.error("Invalid user data:", error);
+    } catch {
+      setIsLoggedIn(false);
+      setUserAvatar(null);
     }
+  };
+
+  useEffect(() => {
+    loadUser();
+    const syncUser = () => loadUser();
+    window.addEventListener("storage", syncUser);
+    return () => window.removeEventListener("storage", syncUser);
   }, []);
+
+  // ✅ Called after login/signup success
+  const handleAuthSuccess = () => {
+    loadUser();
+    setShowLogin(false);
+    setShowSignUp(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    router.push("/");
+  };
 
   const getAvatarImage = () => (userAvatar === "female" ? female : male);
 
   return (
     <>
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Navbar */}
       <Disclosure as="nav" className="bg-white border-b border-gray-200 ml-64">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative flex h-16 items-center justify-between">
-            {/* Left */}
+            {/* Left Section */}
             <div className="flex flex-1 items-center justify-start">
               <a href="/" className="flex items-center space-x-2">
                 <span className="font-serif text-xl font-semibold text-gray-900">
@@ -83,7 +105,7 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* Right */}
+            {/* Right Section */}
             <div className="flex items-center space-x-4">
               {!isLoggedIn ? (
                 <>
@@ -140,11 +162,7 @@ export default function Navbar() {
                               )}
                               onClick={() => {
                                 if (item === "Your profile") setShowUpdate(true);
-                                if (item === "Sign out") {
-                                  setIsLoggedIn(false);
-                                  localStorage.removeItem("user");
-                                  router.push("/");
-                                }
+                                if (item === "Sign out") handleLogout();
                               }}
                             >
                               {item}
@@ -161,7 +179,7 @@ export default function Navbar() {
         </div>
       </Disclosure>
 
-      {/* --- MODALS --- */}
+      {/* --- LOGIN MODAL --- */}
       <Dialog open={showLogin} onClose={() => setShowLogin(false)} className="relative z-50">
         <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -172,11 +190,13 @@ export default function Navbar() {
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
-            <Login />
+            {/* ✅ Pass callback */}
+            <Login onSubmit={handleAuthSuccess} />
           </DialogPanel>
         </div>
       </Dialog>
 
+      {/* --- SIGNUP MODAL --- */}
       <Dialog open={showSignUp} onClose={() => setShowSignUp(false)} className="relative z-50">
         <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -187,12 +207,13 @@ export default function Navbar() {
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
-            <SignUp />
+            {/* ✅ Pass callback */}
+            <SignUp onSubmit={handleAuthSuccess} />
           </DialogPanel>
         </div>
       </Dialog>
 
-      {/* ✅ Update form modal */}
+      {/* --- UPDATE PROFILE MODAL --- */}
       <Dialog open={showUpdate} onClose={() => setShowUpdate(false)} className="relative z-50">
         <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -203,10 +224,12 @@ export default function Navbar() {
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
+
+            {/* ✅ Fixed: Pass onUpdate callback to refresh user info */}
             <UpdateUser
-              onSuccess={() => {
+              onUpdate={() => {
+                loadUser();
                 setShowUpdate(false);
-                window.location.reload(); // ✅ Refresh page after successful update
               }}
             />
           </DialogPanel>

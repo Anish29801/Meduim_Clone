@@ -13,9 +13,9 @@ export interface SignUpProps {
 }
 
 export interface LoginProps {
-  onSubmit?: (email: string, password: string, confirmPassword: string) => void;
-  onGoogleLogin?: () => void;
+  onSubmit?: (email: string, password: string) => void;
 }
+
 
 export interface UpdateUserProps {
   userId?: string;
