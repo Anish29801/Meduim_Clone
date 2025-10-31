@@ -30,7 +30,7 @@ export default function Sidebar() {
   const privateNavigation = [
     { name: "Home", icon: HomeIcon, href: "/" },
     { name: "Library", icon: BookOpenIcon, href: "/dashboard" },
-    { name: "Profile", icon: UserIcon, href: "/profile" },
+    { name: "Profile", icon: UserIcon, href: "/update" },
     { name: "Stories", icon: NewspaperIcon, href: "/stories" },
     { name: "Stats", icon: ChartBarIcon, href: "/stats" },
   ];

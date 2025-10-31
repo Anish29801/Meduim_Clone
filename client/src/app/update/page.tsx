@@ -4,144 +4,181 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useApi } from "../hooks/useApi";
 import { UpdateUserProps, User } from "../type";
+import { useAuth } from "../context/AuthContext";
 
 export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [selectedAvatar, setSelectedAvatar] = useState<"male" | "female" | "">("");
   const { callApi, loading } = useApi();
+  const { user, updateUser } = useAuth();
+  const [localUser, setLocalUser] = useState<User | null>(null);
+  const [selectedAvatar, setSelectedAvatar] = useState<"male" | "female" | "">("");
 
-  // ✅ Load user from localStorage or API
   useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) {
-      const parsedUser = JSON.parse(stored);
-      setUser(parsedUser);
-      setSelectedAvatar(parsedUser.avatar || "");
-    } else if (userId) {
-      callApi(`/api/users/${userId}`)
-        .then((data) => {
-          setUser(data);
-          setSelectedAvatar(data.avatar || "");
-        })
-        .catch(() => toast.error("Failed to load user data ❌"));
+    if (user) {
+      setLocalUser(user);
+      setSelectedAvatar(user.avatar || "");
+    } else {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        const parsedUser = JSON.parse(stored);
+        setLocalUser(parsedUser);
+        setSelectedAvatar(parsedUser.avatar || "");
+      } else if (userId) {
+        callApi(`/api/users/${userId}`)
+          .then((data) => {
+            setLocalUser(data);
+            setSelectedAvatar(data.avatar || "");
+          })
+          .catch(() => toast.error("Failed to load user data ❌"));
+      }
     }
-  }, [userId, callApi]);
+  }, [user, userId, callApi]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return toast.error("No user found. Please log in again.");
+    if (!localUser) return toast.error("No user found. Please log in again.");
 
     try {
       const payload = {
-        fullName: user.fullName,
-        bio: user.bio,
-        role: user.role || "USER",
+        fullName: localUser.fullName,
+        bio: localUser.bio,
+        role: localUser.role || "USER",
         avatar: selectedAvatar,
         gender: selectedAvatar === "male" ? "Male" : "Female",
-        updatePassword: "root", // must match backend
+        updatePassword: "root",
       };
 
-      const updatedUser = await callApi(`/api/users/${user.id}`, {
+      const updatedUser = await callApi(`/api/users/${localUser.id}`, {
         method: "PUT",
         data: payload,
       });
 
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      toast.success("Profile updated successfully ✅");
+      updateUser(updatedUser);
 
+      toast.success("Profile updated successfully ✅");
       if (onUpdate) onUpdate();
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Update failed ❌");
     }
   };
 
-  if (!user) {
-    // ✅ Skeleton loader
+  if (!localUser) {
     return (
-      <div className="animate-pulse space-y-3">
-        <div className="h-6 bg-gray-200 rounded w-1/3" />
-        <div className="h-10 bg-gray-200 rounded" />
-        <div className="h-10 bg-gray-200 rounded" />
-        <div className="h-24 bg-gray-200 rounded" />
-        <div className="h-10 bg-gray-200 rounded" />
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="animate-pulse space-y-3 w-1/2">
+          <div className="h-6 bg-gray-200 rounded w-1/3" />
+          <div className="h-10 bg-gray-200 rounded" />
+          <div className="h-10 bg-gray-200 rounded" />
+          <div className="h-24 bg-gray-200 rounded" />
+          <div className="h-10 bg-gray-200 rounded" />
+        </div>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-700">Update Profile</h2>
+    <div className="flex justify-center py-10 px-4 sm:px-0">
+      <div className="w-full max-w-2xl bg-white shadow-md rounded-xl p-8 border border-gray-100">
+        <h2 className="text-2xl font-semibold mb-6 text-gray-800 text-center">
+          Update Profile
+        </h2>
 
-      <input
-        type="text"
-        name="username"
-        placeholder="Username"
-        className="w-full px-3 py-2 border rounded-lg"
-        value={user.username}
-        onChange={(e) => setUser({ ...user, username: e.target.value })}
-        required
-      />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Username */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Username
+            </label>
+            <input
+              type="text"
+              name="username"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+              value={localUser.username}
+              onChange={(e) => setLocalUser({ ...localUser, username: e.target.value })}
+              required
+            />
+          </div>
 
-      <input
-        type="text"
-        name="fullName"
-        placeholder="Full Name"
-        className="w-full px-3 py-2 border rounded-lg"
-        value={user.fullName}
-        onChange={(e) => setUser({ ...user, fullName: e.target.value })}
-        required
-      />
+          {/* Full Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Full Name
+            </label>
+            <input
+              type="text"
+              name="fullName"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+              value={localUser.fullName}
+              onChange={(e) => setLocalUser({ ...localUser, fullName: e.target.value })}
+              required
+            />
+          </div>
 
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        className="w-full px-3 py-2 border rounded-lg"
-        value={user.email}
-        onChange={(e) => setUser({ ...user, email: e.target.value })}
-        required
-      />
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              disabled
+              className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+              value={localUser.email}
+            />
+          </div>
 
-      <textarea
-        name="bio"
-        placeholder="Bio"
-        rows={3}
-        className="w-full px-3 py-2 border rounded-lg"
-        value={user.bio || ""}
-        onChange={(e) => setUser({ ...user, bio: e.target.value })}
-      />
+          {/* Bio */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Bio
+            </label>
+            <textarea
+              name="bio"
+              rows={4}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none resize-none"
+              value={localUser.bio || ""}
+              onChange={(e) => setLocalUser({ ...localUser, bio: e.target.value })}
+            />
+          </div>
 
-      {/* Avatar selection */}
-      <div>
-        <p className="text-sm text-gray-600 mb-1">Choose Avatar:</p>
-        <div className="flex gap-4">
-          {["male", "female"].map((type) => (
-            <div
-              key={type}
-              className={`cursor-pointer p-1 border rounded-full ${
-                selectedAvatar === type ? "border-indigo-500" : "border-gray-300"
-              }`}
-              onClick={() => {
-                setSelectedAvatar(type as "male" | "female");
-                setUser({ ...user, gender: type, avatar: type });
-              }}
-            >
-              <img src={`/${type}.svg`} alt={type} className="w-12 h-12 rounded-full" />
+          {/* Avatar */}
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-2">Avatar</p>
+            <div className="flex items-center gap-6">
+              {["male", "female"].map((type) => (
+                <div
+                  key={type}
+                  className={`cursor-pointer rounded-full p-1 border-4 transition-all ${
+                    selectedAvatar === type
+                      ? "border-green-500 scale-105"
+                      : "border-transparent hover:border-gray-300"
+                  }`}
+                  onClick={() => {
+                    setSelectedAvatar(type as "male" | "female");
+                    setLocalUser({ ...localUser, gender: type, avatar: type });
+                  }}
+                >
+                  <img
+                    src={`/${type}.svg`}
+                    alt={type}
+                    className="w-14 h-14 rounded-full"
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 rounded-lg bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold hover:shadow-lg transition-all disabled:opacity-70"
+          >
+            {loading ? "Updating..." : "Update Profile"}
+          </button>
+        </form>
       </div>
-
-      {/* Hidden updatePassword to satisfy backend */}
-      <input type="hidden" name="updatePassword" value="root" />
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-2.5 mt-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition-all"
-      >
-        {loading ? "Updating..." : "Update Profile"}
-      </button>
-    </form>
+    </div>
   );
 }
