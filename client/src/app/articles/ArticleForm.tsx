@@ -23,8 +23,17 @@ export default function ArticleForm() {
   const [newTag, setNewTag] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [userData, setUserData] = useState<any>(null); // ✅ added
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // ✅ Safe localStorage access
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const user = localStorage.getItem('user');
+      if (user) setUserData(JSON.parse(user));
+    }
+  }, []);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -41,14 +50,16 @@ export default function ArticleForm() {
   // File selection handlers
   const handleFileChange = (file: File) => setCoverFile(file);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) handleFileChange(e.target.files[0]);
+    if (e.target.files && e.target.files[0])
+      handleFileChange(e.target.files[0]);
   };
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0])
       handleFileChange(e.dataTransfer.files[0]);
   };
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => e.preventDefault();
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) =>
+    e.preventDefault();
   const removeCoverImage = () => setCoverFile(null);
 
   // Tags
@@ -57,21 +68,24 @@ export default function ArticleForm() {
     if (tag && !tags.includes(tag)) setTags([...tags, tag]);
     setNewTag('');
   };
-  const handleRemoveTag = (tag: string) => setTags(tags.filter((t) => t !== tag));
+  const handleRemoveTag = (tag: string) =>
+    setTags(tags.filter((t) => t !== tag));
 
   // Save article
   const handleSave = async () => {
     if (!title.trim()) return toast.error('Title is required!');
     if (!categoryId) return toast.error('Please select a category!');
     if (!coverFile) return toast.error('Please select a cover image!');
+    if (!userData?.id) return toast.error('User not logged in!');
 
     setIsSaving(true);
+
     try {
       const formData = new FormData();
       formData.append('title', title.trim());
       formData.append('content', content);
       formData.append('categoryId', categoryId.toString());
-      formData.append('authorId', '1'); // replace with logged-in user ID
+      formData.append('authorId', userData.id.toString()); // ✅ safe now
       formData.append('tags', JSON.stringify(tags));
       formData.append('coverImage', coverFile);
 
@@ -96,7 +110,9 @@ export default function ArticleForm() {
 
       {/* Title */}
       <div className="flex flex-col">
-        <label className="mb-1 text-indigo-900 font-semibold text-sm">Title</label>
+        <label className="mb-1 text-indigo-900 font-semibold text-sm">
+          Title
+        </label>
         <input
           type="text"
           placeholder="Article Title"
@@ -108,7 +124,9 @@ export default function ArticleForm() {
 
       {/* Category */}
       <div className="flex flex-col">
-        <label className="mb-1 text-indigo-900 font-semibold text-sm">Category</label>
+        <label className="mb-1 text-indigo-900 font-semibold text-sm">
+          Category
+        </label>
         <select
           value={categoryId ?? ''}
           onChange={(e) =>
@@ -126,7 +144,9 @@ export default function ArticleForm() {
       </div>
 
       {/* Cover Image */}
-      <label className="mb-1 text-indigo-900 font-semibold text-sm">Cover Image</label>
+      <label className="mb-1 text-indigo-900 font-semibold text-sm">
+        Cover Image
+      </label>
       <div
         className="border-2 border-dashed border-indigo-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-400 transition-all duration-300 relative flex flex-col items-center justify-center bg-white/30 backdrop-blur-sm"
         onDrop={handleDrop}
@@ -169,7 +189,9 @@ export default function ArticleForm() {
       <div className="space-y-3">
         <div className="flex gap-2 items-end">
           <div className="flex flex-col flex-1">
-            <label className="mb-1 text-indigo-900 font-semibold text-sm">Tags</label>
+            <label className="mb-1 text-indigo-900 font-semibold text-sm">
+              Tags
+            </label>
             <input
               type="text"
               placeholder="Add tag"

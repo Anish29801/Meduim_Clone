@@ -4,12 +4,22 @@ import { useEffect } from 'react';
 import { useApi } from '@/app/hooks/useApi';
 import { motion } from 'framer-motion';
 
+interface Author {
+  id: number;
+  username: string;
+}
+
+interface Category {
+  id: number;
+  name: string;
+}
+
 interface Article {
   id: number;
   title: string;
   status: string;
-  author?: { name: string };
-  category?: { name: string };
+  author?: Author;
+  category?: Category;
 }
 
 export default function AdminArticlesPage() {
@@ -17,7 +27,7 @@ export default function AdminArticlesPage() {
 
   useEffect(() => {
     callApi('/api/articles');
-  }, [callApi]);
+  }, []);
 
   const handleToggleStatus = async (article: Article) => {
     const newStatus = article.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
@@ -26,17 +36,21 @@ export default function AdminArticlesPage() {
         method: 'PUT',
         data: { status: newStatus },
       });
-      callApi('/api/articles'); // Refresh list
+
+      // Refresh the article list after update
+      await callApi('/api/articles');
     } catch (err) {
       console.error('Failed to update status', err);
     }
   };
 
+  // Loading state
   if (loading)
     return (
       <p className="text-center text-gray-500 mt-10">Loading articles...</p>
     );
 
+  // Error state
   if (error)
     return (
       <p className="text-center text-red-500 mt-10">
@@ -44,11 +58,13 @@ export default function AdminArticlesPage() {
       </p>
     );
 
+  // Empty list state
   if (!data || data.length === 0)
     return (
       <p className="text-center text-gray-500 mt-10">No articles found.</p>
     );
 
+  // Table view
   return (
     <div className="p-8 min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50">
       <h1 className="text-3xl font-bold mb-6 font-serif text-gray-900">
@@ -85,9 +101,18 @@ export default function AdminArticlesPage() {
                 transition={{ delay: index * 0.05 }}
                 className="hover:bg-gray-50 transition-all"
               >
+                {/* Title */}
                 <td className="px-6 py-4">{article.title}</td>
-                <td className="px-6 py-4">{article.author?.name || 'N/A'}</td>
+
+                {/* Author username */}
+                <td className="px-6 py-4">
+                  {article.author?.username || 'N/A'}
+                </td>
+
+                {/* Category */}
                 <td className="px-6 py-4">{article.category?.name || 'N/A'}</td>
+
+                {/* Status */}
                 <td className="px-6 py-4">
                   <span
                     className={`px-3 py-1 text-xs font-medium rounded-full ${
@@ -99,8 +124,11 @@ export default function AdminArticlesPage() {
                     {article.status}
                   </span>
                 </td>
+
+                {/* Action button */}
                 <td className="px-6 py-4 text-right">
                   <button
+                    type="button"
                     onClick={() => handleToggleStatus(article)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium ${
                       article.status === 'ACTIVE'

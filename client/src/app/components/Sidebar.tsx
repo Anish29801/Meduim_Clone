@@ -13,12 +13,12 @@ import {
   ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 
-interface DecodedToken {
-  id: number;
-  role: string; // "ADMIN" or "USER"
-  exp: number;
-  iat: number;
-}
+// interface DecodedToken {
+//   id: number;
+//   role: string; // "ADMIN" or "USER"
+//   exp: number;
+//   iat: number;
+// }
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -69,11 +69,11 @@ export default function Sidebar({
   ];
 
   const adminNavigation = [
-    { name: 'ArticleDashboard', icon: HomeIcon, href: '/admin/dashboard' },
+    { name: 'Dashboard', icon: HomeIcon, href: '/admin/dashboard' },
     { name: 'Library', icon: BookOpenIcon, href: '/dashboard', current: false },
-    { name: 'ArticleLists', icon: ShieldCheckIcon, href: '/articles/view' },
+    { name: 'My Lists', icon: ShieldCheckIcon, href: '/articles/view' },
     {
-      name: 'AdminArticlesPage',
+      name: 'Manage Articles',
       icon: ShieldCheckIcon,
       href: '/admin/articles',
     },

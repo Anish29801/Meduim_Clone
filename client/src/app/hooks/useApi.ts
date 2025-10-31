@@ -77,6 +77,7 @@ export function useApi<T = any>() {
         }
 
         const response = await axiosInstance({
+          baseURL: 'http://localhost:5000', // force override
           url: normalizedEndpoint,
           ...config,
         });
