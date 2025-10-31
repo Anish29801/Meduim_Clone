@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Disclosure,
   Menu,
@@ -18,12 +17,14 @@ import {
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import male from "@/../public/male.svg";
-import female from "@/../public/female.svg";
+import { useState } from "react";
 import Sidebar from "./Sidebar";
 import SignUp from "../signup/page";
 import Login from "../login/page";
 import UpdateUser from "../update/page";
+import male from "@/../public/male.svg";
+import female from "@/../public/female.svg";
+import { useAuth } from "@/app/context/AuthContext";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -31,52 +32,13 @@ function classNames(...classes: string[]) {
 
 export default function Navbar() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const { user, isLoggedIn, logout, updateUser, login } = useAuth();
+
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
 
-  // ✅ Load and monitor localStorage user
-  const loadUser = () => {
-    try {
-      const userData = localStorage.getItem("user");
-      if (userData && userData !== "undefined" && userData !== "null") {
-        const user = JSON.parse(userData);
-        setIsLoggedIn(true);
-        setUserAvatar(user.avatar);
-      } else {
-        setIsLoggedIn(false);
-        setUserAvatar(null);
-      }
-    } catch {
-      setIsLoggedIn(false);
-      setUserAvatar(null);
-    }
-  };
-
-  useEffect(() => {
-    loadUser();
-    const syncUser = () => loadUser();
-    window.addEventListener("storage", syncUser);
-    return () => window.removeEventListener("storage", syncUser);
-  }, []);
-
-  // ✅ Called after login/signup success
-  const handleAuthSuccess = () => {
-    loadUser();
-    setShowLogin(false);
-    setShowSignUp(false);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    setIsLoggedIn(false);
-    router.push("/");
-  };
-
-  const getAvatarImage = () => (userAvatar === "female" ? female : male);
+  const getAvatarImage = () => (user?.avatar === "female" ? female : male);
 
   return (
     <>
@@ -151,25 +113,22 @@ export default function Navbar() {
                     </MenuButton>
 
                     <MenuItems className="absolute right-0 z-10 mt-2 w-48 origin-top-right bg-white shadow-lg rounded-md ring-1 ring-black/5 focus:outline-none">
-                      {["Your profile", "Settings", "Sign out"].map((item) => (
-                        <MenuItem key={item}>
-                          {({ focus }) => (
-                            <button
-                              type="button"
-                              className={classNames(
-                                focus ? "bg-gray-100" : "",
-                                "block w-full text-left px-4 py-2 text-sm text-gray-700"
-                              )}
-                              onClick={() => {
-                                if (item === "Your profile") setShowUpdate(true);
-                                if (item === "Sign out") handleLogout();
-                              }}
-                            >
-                              {item}
-                            </button>
-                          )}
-                        </MenuItem>
-                      ))}
+                      <MenuItem>
+                        <button
+                          onClick={() => setShowUpdate(true)}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Your Profile
+                        </button>
+                      </MenuItem>
+                      <MenuItem>
+                        <button
+                          onClick={logout}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Sign out
+                        </button>
+                      </MenuItem>
                     </MenuItems>
                   </Menu>
                 </>
@@ -190,8 +149,11 @@ export default function Navbar() {
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
-            {/* ✅ Pass callback */}
-            <Login onSubmit={handleAuthSuccess} />
+            <Login
+              onSubmit={(email, password) => {
+                setShowLogin(false);
+              }}
+            />
           </DialogPanel>
         </div>
       </Dialog>
@@ -207,8 +169,7 @@ export default function Navbar() {
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
-            {/* ✅ Pass callback */}
-            <SignUp onSubmit={handleAuthSuccess} />
+            <SignUp onSubmit={() => setShowSignUp(false)} />
           </DialogPanel>
         </div>
       </Dialog>
@@ -224,14 +185,7 @@ export default function Navbar() {
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
-
-            {/* ✅ Fixed: Pass onUpdate callback to refresh user info */}
-            <UpdateUser
-              onUpdate={() => {
-                loadUser();
-                setShowUpdate(false);
-              }}
-            />
+            <UpdateUser onUpdate={() => setShowUpdate(false)} />
           </DialogPanel>
         </div>
       </Dialog>
