@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 
 export type UserType = {
   id?: number;
@@ -15,6 +21,7 @@ export type UserType = {
 type AuthContextType = {
   user: UserType | null;
   isLoggedIn: boolean;
+  loading: boolean;
   login: (userData: UserType) => void;
   logout: () => void;
   updateUser: (updates: Partial<UserType>) => void;
@@ -24,10 +31,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserType | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
+    setLoading(false);
   }, []);
 
   const login = (userData: UserType) => {
@@ -54,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       value={{
         user,
         isLoggedIn: !!user,
+        loading,
         login,
         logout,
         updateUser,
