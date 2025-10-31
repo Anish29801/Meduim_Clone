@@ -1,7 +1,5 @@
 'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useState } from 'react';
 
 import {
@@ -99,22 +97,9 @@ export default function Sidebar({
             {role === 'ADMIN' ? 'Admin Panel' : 'User Dashboard'}
           </h2>
 
-  return (
-    <aside className="fixed top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 z-40">
-      <div className="h-full p-5 flex flex-col">
-        {/* Header */}
-        <h2 className="text-lg font-semibold text-gray-900 mb-6 font-serif">
-          Dashboard
-        </h2>
-
-        {/* Navigation */}
-        <nav className="space-y-1">
-          {navigation.map((item) => {
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + "/");
-
-            return (
-              <Link
+          <nav className="space-y-1">
+            {navigation.map((item) => (
+              <a
                 key={item.name}
                 href={item.href}
                 className={classNames(
@@ -122,19 +107,11 @@ export default function Sidebar({
                   'group flex items-center gap-x-3 rounded-md px-3 py-2 text-sm font-medium transition-colors'
                 )}
               >
-                <item.icon
-                  className={classNames(
-                    isActive
-                      ? "text-black"
-                      : "text-gray-500 group-hover:text-black",
-                    "h-5 w-5"
-                  )}
-                />
+                <item.icon className="h-5 w-5 text-gray-500 group-hover:text-black" />
                 {item.name}
-              </Link>
-            );
-          })}
-        </nav>
+              </a>
+            ))}
+          </nav>
 
           {role === 'USER' && (
             <div className="mt-6 border-t pt-4">
@@ -154,7 +131,14 @@ export default function Sidebar({
             </div>
           )}
         </div>
-      </div>
-    </aside>
+      </aside>
+
+      {isOpen && (
+        <div
+          onClick={onClose}
+          className="fixed inset-0 bg-black/20 backdrop-blur-[1px] z-30"
+        ></div>
+      )}
+    </>
   );
 }
