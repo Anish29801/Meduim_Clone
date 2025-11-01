@@ -1,105 +1,104 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useApi } from "@/app/hooks/useApi";
-import { Article } from "@/app/type";
-import toast from "react-hot-toast";
+import { useAuth } from "@/app/context/AuthContext";
+import PostCard from "@/app/components/PostCard";
+
+interface Post {
+  id: number;
+  title: string;
+  publication: string;
+  views: number;
+  comments: number;
+  daysAgo: number;
+  description: string;
+  image?: string;
+  content?: string;
+  authorId: number;
+  tags: { id: number; name: string }[];
+  author?: string;
+  authorAvatar?: string;
+}
 
 export default function StoriesPage() {
-  const { callApi } = useApi();
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { callApi, loading, error } = useApi<Post[]>();
+  const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
+    if (!user?.id) return;
+
     const fetchUserArticles = async () => {
       try {
-        const storedUser = localStorage.getItem("user");
-        if (!storedUser) {
-          toast.error("User not found. Please log in.");
-          return;
-        }
+        // ✅ Fetch user-specific articles
+        const articles = await callApi(`/api/articles/author/${user.id}`);
 
-        const parsedUser = JSON.parse(storedUser);
-        if (!parsedUser?.id) {
-          toast.error("Invalid user data.");
-          return;
-        }
+        const mappedPosts: Post[] = articles.map((a: any) => ({
+          id: a.id,
+          title: a.title,
+          publication: a.category?.name || `Category ${a.categoryId}`,
+          views: a.views || 0,
+          comments: a.comments?.length || 0,
+          daysAgo: Math.floor(
+            (Date.now() - new Date(a.createdAt).getTime()) /
+              (1000 * 60 * 60 * 24)
+          ),
+          description: a.content?.slice(0, 120) + "...",
+          image: a.coverImage
+            ? `http://localhost:5000/api/articles/${a.id}/cover`
+            : "/default-cover.jpg",
+          content: a.content,
+          authorId: a.authorId,
+          tags: a.tags || [],
+          author: a.author?.username,
+          authorAvatar: a.author?.avatar || "/default-avatar.png",
+        }));
 
-        const { data, error } = await callApi(`/api/articles/author/${parsedUser.id}`);
-
-        if (error) {
-          toast.error("Failed to load articles.");
-          console.error("[StoriesPage] API Error:", error);
-          return;
-        }
-
-        setArticles(data || []);
+        setPosts(mappedPosts);
       } catch (err) {
-        console.error("[StoriesPage] Fetch Error:", err);
-        toast.error("Something went wrong while fetching articles.");
-      } finally {
-        setLoading(false);
+        console.error("❌ Failed to fetch user articles:", err);
       }
     };
 
     fetchUserArticles();
-  }, [callApi]);
+  }, [user, callApi]);
 
-  if (loading) {
+  // UI States
+  if (!user?.id)
     return (
-      <div className="flex items-center justify-center min-h-screen text-gray-500">
-        Loading your stories...
+      <div className="p-10 text-center text-gray-500">
+        Please log in to view your stories.
       </div>
     );
-  }
 
-  if (articles.length === 0) {
+  if (loading)
+    return <div className="p-10 text-center text-gray-500">Loading...</div>;
+
+  if (error)
     return (
-      <div className="flex items-center justify-center min-h-screen text-gray-500">
-        No stories found.
+      <div className="p-10 text-center text-red-500">
+        Failed to load stories: {error}
       </div>
     );
-  }
 
   return (
-    <div className="max-w-5xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-6">Your Stories</h1>
+    <main className="max-w-4xl mx-auto p-6">
+      <h1 className="text-2xl font-semibold mb-6">
+        {user.username}'s Stories
+      </h1>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {articles.map((article) => {
-          const coverSrc =
-            article.coverImageBase64 || article.coverImage || "/default-cover.jpg";
-
-          const createdDate = article.createdAt
-            ? new Date(article.createdAt).toLocaleDateString()
-            : "Unknown date";
-
-          return (
-            <div
-              key={article.id}
-              className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300"
-            >
-              <div className="relative w-full h-48 bg-gray-100">
-                <Image
-                  src={coverSrc}
-                  alt={article.title}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-
-              <div className="p-5">
-                <h2 className="text-xl font-semibold mb-2">{article.title}</h2>
-                <p className="text-sm text-gray-500 mb-2">
-                  Published on {createdDate}
-                </p>
-                <p className="text-gray-700 line-clamp-3">{article.content}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+      {posts.length === 0 ? (
+        <div className="text-gray-500 text-center">
+          You haven’t written any stories yet.
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {posts.map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))}
+        </div>
+      )}
+    </main>
   );
 }

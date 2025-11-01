@@ -26,6 +26,21 @@ export default function ArticleForm() {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // ✅ Load logged-in user
+  const [userId, setUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        setUserId(parsed?.id || null);
+      } catch {
+        console.error('Invalid user data in localStorage');
+      }
+    }
+  }, []);
+
   useEffect(() => {
     async function fetchCategories() {
       try {
@@ -38,7 +53,7 @@ export default function ArticleForm() {
     fetchCategories();
   }, [callApi]);
 
-  // File selection handlers
+  // File handlers
   const handleFileChange = (file: File) => setCoverFile(file);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) handleFileChange(e.target.files[0]);
@@ -59,11 +74,12 @@ export default function ArticleForm() {
   };
   const handleRemoveTag = (tag: string) => setTags(tags.filter((t) => t !== tag));
 
-  // Save article
+  // ✅ Save article
   const handleSave = async () => {
     if (!title.trim()) return toast.error('Title is required!');
     if (!categoryId) return toast.error('Please select a category!');
     if (!coverFile) return toast.error('Please select a cover image!');
+    if (!userId) return toast.error('User not logged in!');
 
     setIsSaving(true);
     try {
@@ -71,7 +87,7 @@ export default function ArticleForm() {
       formData.append('title', title.trim());
       formData.append('content', content);
       formData.append('categoryId', categoryId.toString());
-      formData.append('authorId', '1'); // replace with logged-in user ID
+      formData.append('authorId', userId.toString()); // ✅ dynamic user id
       formData.append('tags', JSON.stringify(tags));
       formData.append('coverImage', coverFile);
 
@@ -188,7 +204,6 @@ export default function ArticleForm() {
           </button>
         </div>
 
-        {/* Single Tag List */}
         <div className="flex flex-wrap gap-2">
           {tags.map((tag, index) => (
             <div
