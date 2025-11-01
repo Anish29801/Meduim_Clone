@@ -35,7 +35,6 @@ export default function Navbar() {
 
   return (
     <>
-      <Sidebar />
       <Disclosure as="nav" className="bg-white border-b border-gray-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative flex h-16 items-center justify-between">

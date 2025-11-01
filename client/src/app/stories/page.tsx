@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useApi } from "@/app/hooks/useApi";
 import { useAuth } from "@/app/context/AuthContext";
 import PostCard from "@/app/components/PostCard";
+import ClientLayout from "../components/layouts/client-layout";
 
 interface Post {
   id: number;
@@ -41,8 +42,7 @@ export default function StoriesPage() {
           views: a.views || 0,
           comments: a.comments?.length || 0,
           daysAgo: Math.floor(
-            (Date.now() - new Date(a.createdAt).getTime()) /
-              (1000 * 60 * 60 * 24)
+            (Date.now() - new Date(a.createdAt).getTime()) / (1000 * 60 * 60 * 24)
           ),
           description: a.content?.slice(0, 120) + "...",
           image: a.coverImage
@@ -67,38 +67,29 @@ export default function StoriesPage() {
   // UI States
   if (!user?.id)
     return (
-      <div className="p-10 text-center text-gray-500">
-        Please log in to view your stories.
-      </div>
+      <div className="p-10 text-center text-gray-500">Please log in to view your stories.</div>
     );
 
-  if (loading)
-    return <div className="p-10 text-center text-gray-500">Loading...</div>;
+  if (loading) return <div className="p-10 text-center text-gray-500">Loading...</div>;
 
   if (error)
-    return (
-      <div className="p-10 text-center text-red-500">
-        Failed to load stories: {error}
-      </div>
-    );
+    return <div className="p-10 text-center text-red-500">Failed to load stories: {error}</div>;
 
   return (
-    <main className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-6">
-        {user.username}'s Stories
-      </h1>
+    <ClientLayout>
+      <main className="max-w-4xl mx-auto p-6">
+        <h1 className="text-2xl font-semibold mb-6">{user.username}'s Stories</h1>
 
-      {posts.length === 0 ? (
-        <div className="text-gray-500 text-center">
-          You haven’t written any stories yet.
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
-      )}
-    </main>
+        {posts.length === 0 ? (
+          <div className="text-gray-500 text-center">You haven’t written any stories yet.</div>
+        ) : (
+          <div className="space-y-6">
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+        )}
+      </main>
+    </ClientLayout>
   );
 }

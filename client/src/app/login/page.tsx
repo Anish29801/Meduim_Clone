@@ -40,7 +40,7 @@ export default function Login({ onSubmit }: LoginProps) {
         if (response.role === 'ADMIN') {
           window.location.href = '/admin';
         } else {
-          window.location.href = '/user';
+          window.location.href = '/dashboard';
         }
       }
 

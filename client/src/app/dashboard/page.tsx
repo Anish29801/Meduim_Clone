@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import PostCard from "../components/PostCard";
 import { useApi } from "../hooks/useApi";
+import ClientLayout from "../components/layouts/client-layout";
 
 interface Post {
   id: number;
@@ -36,8 +37,7 @@ export default function Dashboard() {
           views: a.views || 0,
           comments: 0,
           daysAgo: Math.floor(
-            (Date.now() - new Date(a.createdAt).getTime()) /
-              (1000 * 60 * 60 * 24)
+            (Date.now() - new Date(a.createdAt).getTime()) / (1000 * 60 * 60 * 24)
           ),
           description: a.content?.slice(0, 120) + "...",
           image: a.coverImage,
@@ -61,13 +61,15 @@ export default function Dashboard() {
   if (error) return <div className="p-10 text-center text-red-500">{error}</div>;
 
   return (
-    <main className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-6">For you</h1>
-      <div className="space-y-6">
-        {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
-        ))}
-      </div>
-    </main>
+    <ClientLayout>
+      <main className="max-w-4xl mx-auto p-6">
+        <h1 className="text-2xl font-semibold mb-6">For you</h1>
+        <div className="space-y-6">
+          {posts.map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))}
+        </div>
+      </main>
+    </ClientLayout>
   );
 }
