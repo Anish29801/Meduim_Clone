@@ -34,7 +34,30 @@ export const createArticle = async (req: Request, res: Response) => {
     res.status(400).json({ error: err.message });
   }
 };
+export const getArticlesByAuthor = async (req: Request, res: Response) => {
+  try {
+    const authorId = Number(req.params.authorId);
 
+    if (isNaN(authorId)) {
+      return res.status(400).json({ error: 'Invalid author ID' });
+    }
+
+    const articles = await prisma.article.findMany({
+      where: { authorId },
+      include: {
+        author: true,
+        tags: true,
+        category: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return res.json(articles);
+  } catch (error) {
+    console.error('[getArticlesByAuthor] Error:', error);
+    return res.status(500).json({ error: 'Failed to fetch author articles' });
+  }
+};
 // GET all articles
 export const getArticles = async (_req: Request, res: Response) => {
   try {
