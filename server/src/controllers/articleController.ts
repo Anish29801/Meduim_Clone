@@ -35,6 +35,36 @@ export const createArticle = async (req: Request, res: Response) => {
   }
 };
 
+// ✅ Get articles by specific author
+export const getArticlesByAuthor = async (req: Request, res: Response) => {
+  try {
+    const authorId = Number(req.params.authorId);
+    if (isNaN(authorId)) {
+      return res.status(400).json({ error: "Invalid author ID" });
+    }
+
+    const articles = await prisma.article.findMany({
+      where: { authorId },
+      include: {
+        category: true,
+        tags: { select: { id: true, name: true } },
+      },
+    });
+
+    const formatted = articles.map((a) => ({
+      ...a,
+      coverImageBase64: a.coverImageBytes
+        ? `data:image/png;base64,${Buffer.from(a.coverImageBytes).toString("base64")}`
+        : null,
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch author articles" });
+  }
+};
+
 // GET all articles
 export const getArticles = async (_req: Request, res: Response) => {
   try {

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useApi } from "@/app/hooks/useApi";
 import { Article } from "@/app/type";
+import { useAuth } from "@/app/context/AuthContext"; // ✅ Import Auth Context
 import male from "@/app/avatar/male.svg";
 import female from "@/app/avatar/female.svg";
 
@@ -28,8 +29,8 @@ export default function PostPage({ params }: PostPageProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [comment, setComment] = useState("");
 
-  // Replace this with your actual logged-in user's ID
-  const userId = 1; // 🟩 Example: from auth context or localStorage
+  // ✅ Get user login state
+  const { user, isLoggedIn } = useAuth();
 
   // 🟢 Fetch article, author & comments
   useEffect(() => {
@@ -53,7 +54,7 @@ export default function PostPage({ params }: PostPageProps) {
 
   // 🟢 Handle post comment (save to DB)
   const handlePostComment = async () => {
-    if (!comment.trim()) return;
+    if (!comment.trim() || !user) return;
 
     try {
       const newComment = await callApi(`/api/comments`, {
@@ -61,7 +62,7 @@ export default function PostPage({ params }: PostPageProps) {
         data: {
           content: comment,
           articleId: Number(id),
-          userId,
+          userId: user.id, // ✅ Use actual logged-in user ID
         },
       });
       setComments((prev) => [...prev, newComment]);
@@ -122,19 +123,30 @@ export default function PostPage({ params }: PostPageProps) {
       <section className="border-t border-gray-200 pt-6">
         <h2 className="text-xl font-semibold mb-3">Leave a Comment</h2>
 
+        {/* ✅ Disable textarea & button when logged out */}
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="Write your comment..."
-          className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none resize-none"
+          placeholder={
+            isLoggedIn ? "Write your comment..." : "Login to post a comment"
+          }
+          disabled={!isLoggedIn}
+          className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none resize-none ${
+            !isLoggedIn ? "bg-gray-100 cursor-not-allowed text-gray-400" : ""
+          }`}
           rows={3}
         />
 
         <button
           onClick={handlePostComment}
-          className="mt-3 px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          disabled={!isLoggedIn || !comment.trim()}
+          className={`mt-3 px-5 py-2 rounded-lg text-white transition-colors ${
+            isLoggedIn
+              ? "bg-green-600 hover:bg-green-700"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
         >
-          Post Comment
+          {isLoggedIn ? "Post Comment" : "Login to Comment"}
         </button>
 
         {/* 🟩 Display Comments */}

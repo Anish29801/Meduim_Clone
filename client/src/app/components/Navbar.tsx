@@ -1,135 +1,45 @@
-'use client';
-import LogoLink from './LogoLink';
+"use client";
+import LogoLink from "./LogoLink";
 
-import { useState, useEffect } from 'react';
-import {
-  Disclosure,
-  Dialog,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-} from '@headlessui/react';
+import { useState, useEffect } from "react";
+import { Disclosure, Dialog, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import {
   Bars3Icon,
   BellIcon,
   MagnifyingGlassIcon,
   PencilSquareIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation'; //  for redirect
-import male from '@/../public/male.svg';
-import female from '@/../public/female.svg';
-import Sidebar from './Sidebar';
-import SignUp from '../signup/page';
-import Login from '../login/page';
-import UpdateUser from '../update/page';
+} from "@heroicons/react/24/outline";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import Sidebar from "./Sidebar";
+import SignUp from "../signup/page";
+import Login from "../login/page";
+import UpdateUser from "../update/page";
+import male from "@/../public/male.svg";
+import female from "@/../public/female.svg";
+import { useAuth } from "@/app/context/AuthContext";
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 export default function Navbar() {
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userAvatar, setUserAvatar] = useState<string | null>(null);
-
-  // Modal states
+  const { user, isLoggedIn, logout, updateUser, login } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
 
-  // ✅ Load user from localStorage safely
-  useEffect(() => {
-    try {
-      const userData = localStorage.getItem('user');
-      if (userData && userData !== 'undefined' && userData !== 'null') {
-        const user = JSON.parse(userData);
-        setIsLoggedIn(true);
-        setUserAvatar(user.avatar);
-      } else {
-        localStorage.removeItem('user');
-      }
-    } catch (error) {
-      console.error('Invalid user data in localStorage:', error);
-      localStorage.removeItem('user');
-    }
-  }, []);
-
-  // Login submit handler
-  const handleLoginSubmit = (email: string, password: string) => {
-    setShowLogin(false);
-    setIsLoggedIn(true);
-
-    try {
-      const userData = localStorage.getItem('user');
-      if (userData && userData !== 'undefined' && userData !== 'null') {
-        const user = JSON.parse(userData);
-        setUserAvatar(user.avatar);
-      }
-    } catch (error) {
-      console.error('Failed to parse user after login:', error);
-    }
-
-    router.push('/dashboard'); // ✅ redirect after login
-  };
-
-  // ✅ Signup submit handler
-  const handleSignUpSubmit = (
-    username: string,
-    fullName: string,
-    email: string,
-    password: string,
-    confirmPassword: string,
-    bio: string,
-    avatar: string,
-    gender: string,
-    role: string
-  ) => {
-    setShowSignUp(false);
-    setIsLoggedIn(true);
-    setUserAvatar(avatar);
-
-    const newUser = { username, fullName, email, bio, avatar, gender, role };
-    localStorage.setItem('user', JSON.stringify(newUser));
-
-    router.push('/dashboard'); // ✅ redirect after signup
-  };
-
-  // ✅ Update handler
-  const handleUpdateSubmit = () => {
-    try {
-      const userData = localStorage.getItem('user');
-      if (userData && userData !== 'undefined' && userData !== 'null') {
-        const user = JSON.parse(userData);
-        setUserAvatar(user.avatar);
-      }
-    } catch (error) {
-      console.error('Failed to parse user after update:', error);
-    }
-    setShowUpdate(false);
-  };
-
-  const getAvatarImage = () => (userAvatar === 'female' ? female : male);
+  const getAvatarImage = () => (user?.avatar === "female" ? female : male);
 
   return (
     <>
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
+      <Sidebar />
       <Disclosure as="nav" className="bg-white border-b border-gray-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative flex h-16 items-center justify-between">
             <div className="flex flex-1 items-center justify-start">
-              {/* Hamburger */}
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="p-2 rounded-md text-gray-700 hover:bg-gray-100 border border-gray-200 mr-3"
-              >
-                <Bars3Icon className="h-6 w-6" />
-              </button>
-
               {/* remove admin and user dashboard */}
               {/* Logo */}
               {/* <a href="/" className="flex items-center space-x-2">
@@ -173,14 +83,14 @@ export default function Navbar() {
               ) : (
                 <>
                   <button
-                    onClick={() => router.push('/articles/new')}
+                    onClick={() => router.push("/articles/new")}
                     className="inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100 transition"
                   >
                     <PencilSquareIcon className="h-5 w-5 mr-1" />
                     Write
                   </button>
                   <button
-                    onClick={() => router.push('/articles/view')}
+                    onClick={() => router.push("/articles/view")}
                     className="inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100 transition"
                   >
                     view
@@ -205,30 +115,14 @@ export default function Navbar() {
                     </MenuButton>
 
                     <MenuItems className="absolute right-0 z-10 mt-2 w-48 origin-top-right bg-white shadow-lg rounded-md ring-1 ring-black/5 focus:outline-none">
-                      {['Your profile', 'Settings', 'Sign out'].map((item) => (
-                        <MenuItem key={item}>
-                          {({ focus }) => (
-                            <button
-                              type="button"
-                              className={classNames(
-                                focus ? 'bg-gray-100' : '',
-                                'block w-full text-left px-4 py-2 text-sm text-gray-700'
-                              )}
-                              onClick={() => {
-                                if (item === 'Your profile')
-                                  setShowUpdate(true);
-                                if (item === 'Sign out') {
-                                  setIsLoggedIn(false);
-                                  localStorage.removeItem('user');
-                                  router.push('/'); // ✅ back to home on logout
-                                }
-                              }}
-                            >
-                              {item}
-                            </button>
-                          )}
-                        </MenuItem>
-                      ))}
+                      <MenuItem>
+                        <button
+                          onClick={logout}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Sign out
+                        </button>
+                      </MenuItem>
                     </MenuItems>
                   </Menu>
                 </>
@@ -239,11 +133,7 @@ export default function Navbar() {
       </Disclosure>
 
       {/* LOGIN MODAL */}
-      <Dialog
-        open={showLogin}
-        onClose={() => setShowLogin(false)}
-        className="relative z-50"
-      >
+      <Dialog open={showLogin} onClose={() => setShowLogin(false)} className="relative z-50">
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg relative">
@@ -253,18 +143,17 @@ export default function Navbar() {
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Login</h2>
-            <Login onSubmit={handleLoginSubmit} />
+            <Login
+              onSubmit={(email, password) => {
+                setShowLogin(false);
+              }}
+            />
           </Dialog.Panel>
         </div>
       </Dialog>
 
       {/* SIGNUP MODAL */}
-      <Dialog
-        open={showSignUp}
-        onClose={() => setShowSignUp(false)}
-        className="relative z-50"
-      >
+      <Dialog open={showSignUp} onClose={() => setShowSignUp(false)} className="relative z-50">
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg relative">
@@ -274,20 +163,13 @@ export default function Navbar() {
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Create an Account
-            </h2>
-            <SignUp onSubmit={handleSignUpSubmit} />
+            <SignUp onSubmit={() => setShowSignUp(false)} />
           </Dialog.Panel>
         </div>
       </Dialog>
 
       {/* UPDATE PROFILE MODAL */}
-      <Dialog
-        open={showUpdate}
-        onClose={() => setShowUpdate(false)}
-        className="relative z-50"
-      >
+      <Dialog open={showUpdate} onClose={() => setShowUpdate(false)} className="relative z-50">
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg relative">
@@ -297,10 +179,7 @@ export default function Navbar() {
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
-            <UpdateUser
-              userId="current-user-id"
-              onUpdate={handleUpdateSubmit}
-            />
+            <UpdateUser onUpdate={() => setShowUpdate(false)} />
           </Dialog.Panel>
         </div>
       </Dialog>
