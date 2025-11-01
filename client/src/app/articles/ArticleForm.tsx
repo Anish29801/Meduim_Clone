@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import toast, { Toaster } from 'react-hot-toast';
-import { useApi } from '@/app/hooks/useApi';
-import LexicalEditor from '../components/lecxicaleditor';
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
+import { useApi } from "@/app/hooks/useApi";
+import LexicalEditor from "../components/lecxicaleditor";
 
 interface Category {
   id: number;
@@ -15,14 +15,15 @@ export default function ArticleForm() {
   const router = useRouter();
   const { callApi } = useApi();
 
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [tags, setTags] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState('');
+  const [newTag, setNewTag] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [userData, setUserData] = useState<any>(null); // ✅ added
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -30,13 +31,13 @@ export default function ArticleForm() {
   const [userId, setUserId] = useState<number | null>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
         const parsed = JSON.parse(storedUser);
         setUserId(parsed?.id || null);
       } catch {
-        console.error('Invalid user data in localStorage');
+        console.error("Invalid user data in localStorage");
       }
     }
   }, []);
@@ -44,10 +45,10 @@ export default function ArticleForm() {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const data = await callApi('/api/categories');
+        const data = await callApi("/api/categories");
         setCategories(data);
       } catch {
-        toast.error('Failed to fetch categories');
+        toast.error("Failed to fetch categories");
       }
     }
     fetchCategories();
@@ -60,8 +61,7 @@ export default function ArticleForm() {
   };
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0])
-      handleFileChange(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFileChange(e.dataTransfer.files[0]);
   };
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => e.preventDefault();
   const removeCoverImage = () => setCoverFile(null);
@@ -70,37 +70,38 @@ export default function ArticleForm() {
   const handleAddTag = () => {
     const tag = newTag.trim();
     if (tag && !tags.includes(tag)) setTags([...tags, tag]);
-    setNewTag('');
+    setNewTag("");
   };
   const handleRemoveTag = (tag: string) => setTags(tags.filter((t) => t !== tag));
 
   // ✅ Save article
   const handleSave = async () => {
-    if (!title.trim()) return toast.error('Title is required!');
-    if (!categoryId) return toast.error('Please select a category!');
-    if (!coverFile) return toast.error('Please select a cover image!');
-    if (!userId) return toast.error('User not logged in!');
+    if (!title.trim()) return toast.error("Title is required!");
+    if (!categoryId) return toast.error("Please select a category!");
+    if (!coverFile) return toast.error("Please select a cover image!");
+    if (!userId) return toast.error("User not logged in!");
 
     setIsSaving(true);
+
     try {
       const formData = new FormData();
-      formData.append('title', title.trim());
-      formData.append('content', content);
-      formData.append('categoryId', categoryId.toString());
-      formData.append('authorId', userId.toString()); // ✅ dynamic user id
-      formData.append('tags', JSON.stringify(tags));
-      formData.append('coverImage', coverFile);
+      formData.append("title", title.trim());
+      formData.append("content", content);
+      formData.append("categoryId", categoryId.toString());
+      formData.append("authorId", userId.toString()); // ✅ dynamic user id
+      formData.append("tags", JSON.stringify(tags));
+      formData.append("coverImage", coverFile);
 
-      await callApi('/api/articles', {
-        method: 'POST',
+      await callApi("/api/articles", {
+        method: "POST",
         data: formData,
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
-      toast.success('Article created successfully!');
-      setTimeout(() => router.push('/dashboard'), 400);
+      toast.success("Article created successfully!");
+      setTimeout(() => router.push("/dashboard"), 400);
     } catch (err: any) {
-      toast.error(err?.error || 'Failed to create article');
+      toast.error(err?.error || "Failed to create article");
     } finally {
       setIsSaving(false);
     }
@@ -126,10 +127,8 @@ export default function ArticleForm() {
       <div className="flex flex-col">
         <label className="mb-1 text-indigo-900 font-semibold text-sm">Category</label>
         <select
-          value={categoryId ?? ''}
-          onChange={(e) =>
-            setCategoryId(e.target.value ? Number(e.target.value) : null)
-          }
+          value={categoryId ?? ""}
+          onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : null)}
           className="w-full px-4 py-2 rounded-xl bg-white border-2 border-indigo-300 text-indigo-700 font-medium cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-indigo-500 transition-all duration-300"
         >
           <option value="">Select a category</option>
@@ -168,9 +167,7 @@ export default function ArticleForm() {
             </button>
           </div>
         ) : (
-          <p className="text-indigo-500 font-medium">
-            Drag & drop or click to upload cover image
-          </p>
+          <p className="text-indigo-500 font-medium">Drag & drop or click to upload cover image</p>
         )}
         <input
           type="file"
@@ -191,7 +188,7 @@ export default function ArticleForm() {
               placeholder="Add tag"
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+              onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
               className="w-full px-3 py-2 border-2 border-indigo-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-indigo-500 transition-all duration-300"
             />
           </div>
@@ -236,7 +233,7 @@ export default function ArticleForm() {
         disabled={isSaving}
         className="w-full py-3 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 text-white rounded-xl hover:from-blue-500 hover:via-indigo-600 hover:to-purple-600 disabled:opacity-50 shadow transition-all duration-300 font-semibold"
       >
-        {isSaving ? 'Saving...' : 'Save Article'}
+        {isSaving ? "Saving..." : "Save Article"}
       </button>
     </div>
   );

@@ -24,8 +24,28 @@ export default function Login({ onSubmit }: LoginProps) {
         data: { email, password },
       });
 
-      if (response?.token) localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response));
+      // // ✅ Store token or user data as needed
+      // localStorage.setItem('user', JSON.stringify(response));
+      // if (response.token) localStorage.setItem('token', response.token);
+
+      // ✅ Save token & role securely
+      if (response?.token) {
+        localStorage.setItem('token', response.token);
+      }
+
+      if (response?.role) {
+        localStorage.setItem('role', response.role);
+
+        // ✅ Redirect based on role
+        if (response.role === 'ADMIN') {
+          window.location.href = '/admin';
+        } else {
+          window.location.href = '/user';
+        }
+      }
+
+      // ✅ Save user info
+      localStorage.setItem('user', JSON.stringify(response));
 
       toast.success("Login successful 🎉");
 

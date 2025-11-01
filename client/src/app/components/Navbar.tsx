@@ -1,15 +1,10 @@
 "use client";
+import LogoLink from "./LogoLink";
 
+import { useState, useEffect } from "react";
+import { Disclosure, Dialog, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import {
-  Disclosure,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-  Dialog,
-  DialogPanel,
-} from "@headlessui/react";
-import {
+  Bars3Icon,
   BellIcon,
   MagnifyingGlassIcon,
   PencilSquareIcon,
@@ -17,7 +12,6 @@ import {
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import Sidebar from "./Sidebar";
 import SignUp from "../signup/page";
 import Login from "../login/page";
@@ -33,7 +27,6 @@ function classNames(...classes: string[]) {
 export default function Navbar() {
   const router = useRouter();
   const { user, isLoggedIn, logout, updateUser, login } = useAuth();
-
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
@@ -43,18 +36,21 @@ export default function Navbar() {
   return (
     <>
       <Sidebar />
-
-      <Disclosure as="nav" className="bg-white border-b border-gray-200 ml-64">
+      <Disclosure as="nav" className="bg-white border-b border-gray-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative flex h-16 items-center justify-between">
-            {/* Left Section */}
             <div className="flex flex-1 items-center justify-start">
-              <a href="/" className="flex items-center space-x-2">
+              {/* remove admin and user dashboard */}
+              {/* Logo */}
+              {/* <a href="/" className="flex items-center space-x-2">
                 <span className="font-serif text-xl font-semibold text-gray-900">
                   Tagebuch
                 </span>
-              </a>
+              </a> */}
 
+              <LogoLink />
+
+              {/* Search */}
               <div className="ml-6 hidden md:flex items-center">
                 <div className="relative text-gray-500">
                   <MagnifyingGlassIcon className="absolute left-2 top-2.5 h-5 w-5 text-gray-400" />
@@ -67,7 +63,7 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* Right Section */}
+            {/* Right section */}
             <div className="flex items-center space-x-4">
               {!isLoggedIn ? (
                 <>
@@ -88,12 +84,17 @@ export default function Navbar() {
                 <>
                   <button
                     onClick={() => router.push("/articles/new")}
-                    className="hidden sm:inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100"
+                    className="inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100 transition"
                   >
                     <PencilSquareIcon className="h-5 w-5 mr-1" />
                     Write
                   </button>
-
+                  <button
+                    onClick={() => router.push("/articles/view")}
+                    className="inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100 transition"
+                  >
+                    view
+                  </button>
                   <button
                     type="button"
                     className="relative rounded-full p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -101,6 +102,7 @@ export default function Navbar() {
                     <BellIcon className="h-6 w-6" />
                   </button>
 
+                  {/* Profile Menu */}
                   <Menu as="div" className="relative">
                     <MenuButton className="flex rounded-full focus:outline-none">
                       <Image
@@ -130,55 +132,55 @@ export default function Navbar() {
         </div>
       </Disclosure>
 
-      {/* --- LOGIN MODAL --- */}
+      {/* LOGIN MODAL */}
       <Dialog open={showLogin} onClose={() => setShowLogin(false)} className="relative z-50">
-        <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <DialogPanel className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg relative">
+          <Dialog.Panel className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg relative">
             <button
               onClick={() => setShowLogin(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
             >
-              <XMarkIcon className="h-5 w-5" />
+              <XMarkIcon className="w-5 h-5" />
             </button>
             <Login
               onSubmit={(email, password) => {
                 setShowLogin(false);
               }}
             />
-          </DialogPanel>
+          </Dialog.Panel>
         </div>
       </Dialog>
 
-      {/* --- SIGNUP MODAL --- */}
+      {/* SIGNUP MODAL */}
       <Dialog open={showSignUp} onClose={() => setShowSignUp(false)} className="relative z-50">
-        <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <DialogPanel className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg relative">
+          <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg relative">
             <button
               onClick={() => setShowSignUp(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
             >
-              <XMarkIcon className="h-5 w-5" />
+              <XMarkIcon className="w-5 h-5" />
             </button>
             <SignUp onSubmit={() => setShowSignUp(false)} />
-          </DialogPanel>
+          </Dialog.Panel>
         </div>
       </Dialog>
 
-      {/* --- UPDATE PROFILE MODAL --- */}
+      {/* UPDATE PROFILE MODAL */}
       <Dialog open={showUpdate} onClose={() => setShowUpdate(false)} className="relative z-50">
-        <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <DialogPanel className="bg-white rounded-lg p-6 max-w-lg w-full shadow-lg relative">
+          <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg relative">
             <button
               onClick={() => setShowUpdate(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
             >
-              <XMarkIcon className="h-5 w-5" />
+              <XMarkIcon className="w-5 h-5" />
             </button>
             <UpdateUser onUpdate={() => setShowUpdate(false)} />
-          </DialogPanel>
+          </Dialog.Panel>
         </div>
       </Dialog>
     </>

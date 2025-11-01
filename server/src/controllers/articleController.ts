@@ -93,6 +93,32 @@ export const getArticles = async (_req: Request, res: Response) => {
   }
 };
 
+// TOGGLE ARTICLE STATUS (ACTIVE/INACTIVE)
+
+export const toggleArticleStatus = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const { status } = req.body; // expected: "ACTIVE" or "INACTIVE"
+
+    if (!['ACTIVE', 'INACTIVE'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
+
+    const updatedArticle = await prisma.article.update({
+      where: { id },
+      data: { status },
+    });
+
+    res.json({
+      message: `Article status updated to ${status}`,
+      article: updatedArticle,
+    });
+  } catch (err) {
+    console.error('Failed to update article status:', err);
+    res.status(500).json({ error: 'Failed to update article status' });
+  }
+};
+
 // GET single article
 export const getArticle = async (req: Request, res: Response) => {
   try {
