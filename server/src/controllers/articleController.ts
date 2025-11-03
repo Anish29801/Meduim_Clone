@@ -2,9 +2,12 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma';
 import {
-  CreateArticleData,
-  createArticleService,
+   createArticleService, getArticleStatusService,
+  updateArticleStatusService,
 } from '../services/articleService';
+
+import { Bytes } from '@prisma/client/runtime/library';
+
 
 // multer middleware ke sath
 export const createArticle = async (req: Request, res: Response) => {
@@ -109,6 +112,7 @@ export const toggleArticleStatus = async (req: Request, res: Response) => {
       data: { status },
     });
 
+
     res.json({
       message: `Article status updated to ${status}`,
       article: updatedArticle,
@@ -208,3 +212,22 @@ export const deleteArticle = async (req: Request, res: Response) => {
     res.status(400).json({ error: 'Failed to delete article' });
   }
 };
+
+export const getArticleStatus = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+
+    const article = await getArticleStatusService(id);
+    if (!article) {
+      return res.status(404).json({ error: "Article not found" });
+    }
+
+    res.json(article);
+  } catch (error) {
+    console.error("Error fetching article:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+

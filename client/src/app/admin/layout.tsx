@@ -1,15 +1,24 @@
-"use client";
+'use client';
 
-import { AuthProvider } from "../context/AuthContext";
-import { useAuth } from "../hooks/useAuth";
-import { Toaster } from "react-hot-toast";
-import "@/app/globals.css";
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
+import { AuthProvider } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
+import { Toaster } from 'react-hot-toast';
+import '@/app/globals.css';
+import Sidebar from '../components/Sidebar';
+import Navbar from '../components/Navbar';
+import React from 'react';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  // ✅ Sirf ADMIN role wale yahan aa sake
-  useAuth("ADMIN");
+function AdminGuard({ children }: { children: React.ReactNode }) {
+  useAuth('ADMIN');
+  return <>{children}</>;
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  // useAuth("ADMIN");
 
   return (
     <html lang="en" className="h-full">
@@ -19,10 +28,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex  min-h-screen bg-gray-50 text-gray-900">
             <Sidebar />
             {/* Removed Navbar and Footer */}
-            <main className="flex-1 p-6">{children}</main>
+            <main className="flex-1 p-6">
+              <AdminGuard>{children}</AdminGuard>
+            </main>
           </div>
+          <Toaster position="top-right" reverseOrder={false} />
         </AuthProvider>
-        <Toaster position="top-right" reverseOrder={false} />
       </body>
     </html>
   );
