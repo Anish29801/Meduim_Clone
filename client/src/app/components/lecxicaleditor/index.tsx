@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
@@ -46,10 +46,9 @@ function EditorContent({
   readOnly?: boolean;
 }) {
   const [editor] = useLexicalComposerContext();
+  const isLoadedFirstTime = useRef(false);
 
-  useEffect(() => {
-    if (!initialContent) return;
-
+  if (isLoadedFirstTime.current == false) {
     try {
       const parsed = JSON.parse(initialContent);
       const editorState = editor.parseEditorState(parsed);
@@ -91,7 +90,8 @@ function EditorContent({
       const editorState = editor.parseEditorState(fallbackJSON);
       editor.setEditorState(editorState);
     }
-  }, [initialContent, editor]);
+    isLoadedFirstTime.current = true;
+  }
 
   const handleChange = (editorState: EditorState) => {
     editorState.read(() => {

@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { useApi } from "@/app/hooks/useApi";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import LexicalEditor from "../components/lecxicaleditor";
-import { useRouter } from "next/navigation";
-import ClientLayout from "../components/layouts/client-layout";
 
 // 🧩 Interfaces
 interface Tag {
@@ -63,7 +62,7 @@ export default function EditArticlePage({ articleId }: Props) {
     }
 
     if (articleId) fetchArticle();
-  }, [articleId, callApi]);
+  }, [articleId]);
 
   // 🔹 Load categories
   useEffect(() => {
@@ -114,81 +113,79 @@ export default function EditArticlePage({ articleId }: Props) {
 
   // 🔹 JSX
   return (
-    <ClientLayout>
-      <div className="max-w-3xl mx-auto p-8 bg-white rounded-2xl shadow-xl space-y-6">
-        <h1 className="text-2xl font-bold text-indigo-700">✏️ Edit Article</h1>
+    <div className="max-w-3xl mx-auto p-8 bg-white rounded-2xl shadow-xl space-y-6">
+      <h1 className="text-2xl font-bold text-indigo-700">✏️ Edit Article</h1>
 
-        {/* Title */}
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-3 border-2 border-gray-300 rounded-xl"
-          placeholder="Enter article title"
-        />
+      {/* Title */}
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="w-full p-3 border-2 border-gray-300 rounded-xl"
+        placeholder="Enter article title"
+      />
 
-        {/* Content */}
-        <div className="border-2 border-gray-300 rounded-xl p-2">
-          <LexicalEditor initialContent={content} onChange={setContent} />
-        </div>
-
-        {/* Category Dropdown */}
-        <select
-          value={categoryId}
-          onChange={(e) => setCategoryId(Number(e.target.value))}
-          className="w-full p-3 border-2 border-gray-300 rounded-xl"
-        >
-          <option value="">Select Category</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-
-        {/* Tags Input */}
-        <input
-          type="text"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-          className="w-full p-3 border-2 border-gray-300 rounded-xl"
-          placeholder="Enter tags (comma separated)"
-        />
-
-        {/* Tag Preview */}
-        {tags && (
-          <div className="flex flex-wrap gap-2">
-            {tags.split(",").map((tag: string, i: number) => (
-              <span key={i} className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm">
-                #{tag.trim()}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Current Image */}
-        {article.coverImageBase64 && (
-          <div className="mt-4">
-            <p className="text-gray-600 text-sm mb-2">Current Cover:</p>
-            <img
-              src={article.coverImageBase64}
-              alt="Cover"
-              className="w-64 h-40 object-cover rounded-xl border"
-            />
-          </div>
-        )}
-
-        {/* Upload New Image */}
-        <input type="file" accept="image/*" onChange={handleImageChange} />
-
-        {/* Update Button */}
-        <button
-          onClick={handleUpdate}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-medium w-full"
-        >
-          Update Article
-        </button>
+      {/* Content */}
+      <div className="border-2 border-gray-300 rounded-xl p-2">
+        <LexicalEditor initialContent={content} onChange={setContent} />
       </div>
-    </ClientLayout>
+
+      {/* Category Dropdown */}
+      <select
+        value={categoryId}
+        onChange={(e) => setCategoryId(Number(e.target.value))}
+        className="w-full p-3 border-2 border-gray-300 rounded-xl"
+      >
+        <option value="">Select Category</option>
+        {categories.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+      </select>
+
+      {/* Tags Input */}
+      <input
+        type="text"
+        value={tags}
+        onChange={(e) => setTags(e.target.value)}
+        className="w-full p-3 border-2 border-gray-300 rounded-xl"
+        placeholder="Enter tags (comma separated)"
+      />
+
+      {/* Tag Preview */}
+      {tags && (
+        <div className="flex flex-wrap gap-2">
+          {tags.split(",").map((tag: string, i: number) => (
+            <span key={i} className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm">
+              #{tag.trim()}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Current Image */}
+      {article.coverImageBase64 && (
+        <div className="mt-4">
+          <p className="text-gray-600 text-sm mb-2">Current Cover:</p>
+          <img
+            src={article.coverImageBase64}
+            alt="Cover"
+            className="w-64 h-40 object-cover rounded-xl border"
+          />
+        </div>
+      )}
+
+      {/* Upload New Image */}
+      <input type="file" accept="image/*" onChange={handleImageChange} />
+
+      {/* Update Button */}
+      <button
+        onClick={handleUpdate}
+        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-medium w-full"
+      >
+        Update Article
+      </button>
+    </div>
   );
 }

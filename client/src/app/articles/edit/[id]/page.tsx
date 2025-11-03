@@ -1,6 +1,7 @@
-'use client';
-import { useParams } from 'next/navigation';
-import EditArticlePage from '@/app/articles/EditArticlePage';
+"use client";
+import { useParams } from "next/navigation";
+import EditArticlePage from "@/app/articles/EditArticlePage";
+import ClientLayout from "@/app/components/layouts/client-layout";
 
 export default function EditPage() {
   const { id } = useParams();
@@ -8,5 +9,9 @@ export default function EditPage() {
 
   if (!articleId) return <p>Invalid article ID</p>;
 
-  return <EditArticlePage articleId={articleId} />;
+  return (
+    <ClientLayout>
+      <EditArticlePage articleId={articleId} />
+    </ClientLayout>
+  );
 }
