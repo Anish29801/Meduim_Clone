@@ -6,7 +6,7 @@ import {
   getArticle,
   deleteArticle,
   getArticleCover,
-  updateArticle,
+  updateArticle,getArticleStatus,
   toggleArticleStatus,
   getArticlesByAuthor,
 } from "../controllers/articleController";
@@ -22,7 +22,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // ✅ Get all articles
 router.get("/", getArticles);
-router.put("/:id/status", toggleArticleStatus);
+router.route("/:id/status")
+  .get(getArticleStatus)
+  .put(toggleArticleStatus);
 
 // ✅ Get articles by author (important: must be before `/:id`)
 router.get("/author/:authorId", getArticlesByAuthor);

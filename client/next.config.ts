@@ -1,12 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+    turbopack: {
+    root: __dirname, 
+  },
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: "miro.medium.com",
-        port: "", // ✅ Required for type safety in TS
+        port: "", 
         pathname: "/**",
       },
       {

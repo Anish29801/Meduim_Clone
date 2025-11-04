@@ -65,22 +65,28 @@ export const updateArticleStatusService = async (
   const updated = await prisma.article.update({
     where: { id },
     data: { status },
+    include:{
+      author: { select: { id: true, username: true } },
+      category: { select: { id: true, name: true } },
+      tags:true,
+    }
   });
 
   return updated;
 };
 
 // ✅ Get a single article by ID
-export const getArticleByIdService = async (id: number) => {
+export const getArticleStatusService = async (id: number) => {
   const article = await prisma.article.findUnique({
     where: { id },
-    include: {
+    select: {
+      id: true,
+      title: true,
+      status: true,
       author: { select: { id: true, username: true } },
       category: { select: { id: true, name: true } },
-      tags: true,
     },
   });
-
-  if (!article) throw new Error('Article not found');
   return article;
 };
+

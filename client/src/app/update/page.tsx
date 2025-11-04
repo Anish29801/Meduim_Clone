@@ -17,6 +17,8 @@ export default function UpdateUser({ userId, onUpdate }: UpdateUserProps) {
     if (user) {
       setLocalUser(user);
       setSelectedAvatar(user.avatar || "");
+      console.log("set:",setLocalUser);
+      
     } else {
       const stored = localStorage.getItem("user");
       if (stored) {
