@@ -42,7 +42,7 @@ model Article {
   categoryId Int?
   claps      Int       @default(0)
   views      Int       @default(0)
-  status      String    @default("ACTIVE")
+  status     String    @default("ACTIVE")
   // Relations
   category     Category? @relation(fields: [categoryId], references: [id])
   authorId     Int

@@ -28,12 +28,12 @@ export default function AdminArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const router = useRouter();
 
-  // 🟢 Fetch all articles
+  // Fetch all articles
   useEffect(() => {
     callApi('/api/articles').then((res) => setArticles(res));
   }, []);
 
-  // // 🟢 On Action button click → navigate to /admin/articles/:id
+  // //  On Action button click → navigate to /admin/articles/:id
   // const handleToggleStatus = (article: Article) => {
   //   router.push(`/admin/articles/${article.id}`);
   // };

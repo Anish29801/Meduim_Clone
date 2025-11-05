@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useApi } from '@/app/hooks/useApi';
-import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
+import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 interface Article {
   id: number;
@@ -17,7 +17,7 @@ interface Article {
   tags?: { id: number; name: string }[];
 }
 
-// 🧩 Extract plain text from Lexical JSON
+// Extract plain text from Lexical JSON
 function extractPlainText(lexicalJSON: string): string {
   try {
     const parsed = JSON.parse(lexicalJSON);
@@ -35,141 +35,158 @@ function extractPlainText(lexicalJSON: string): string {
   }
 }
 
-export default function ArticlePage() {
-  const { callApi, loading } = useApi<Article[]>();
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
+export default function SingleArticlePage() {
+  const { id } = useParams();
   const router = useRouter();
+  const { callApi, loading } = useApi<Article>();
+  const [article, setArticle] = useState<Article | null>(null);
+  const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  // 🔹 Fetch all articles
+  //Fetch single article
   useEffect(() => {
-    async function fetchArticles() {
+    async function fetchArticle() {
       try {
-        const data = await callApi('/api/articles');
-        setArticles(data);
+        const data = await callApi(`/api/articles/${id}`);
+        setArticle(data);
       } catch (err) {
-        console.error('Failed to fetch articles:', err);
+        console.error('Failed to fetch article:', err);
+        toast.error('Failed to fetch article');
       }
     }
-    fetchArticles();
-  }, [callApi]);
+    if (id) fetchArticle();
+  }, [id, callApi]);
 
-  // 🔹 Toggle Status
-  const handleToggleStatus = async (id: number, currentStatus: string) => {
-    const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-    setUpdatingId(id);
+  //Toggle Article Status
+  const handleToggleStatus = async () => {
+    if (!article) return;
+    const newStatus = article.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    setUpdating(true);
     try {
       await callApi(`/api/articles/${id}/status`, {
         method: 'PUT',
         data: { status: newStatus },
       });
-      setArticles((prev) =>
-        prev.map((a) =>
-          a.id === id ? { ...a, status: newStatus as 'ACTIVE' | 'INACTIVE' } : a
-        )
-      );
+      setArticle({ ...article, status: newStatus });
       toast.success(`Status changed to ${newStatus}`);
     } catch (err) {
       console.error('Failed to update status:', err);
       toast.error('Failed to update status');
     } finally {
-      setUpdatingId(null);
+      setUpdating(false);
+    }
+  };
+  const handleEdit = (id: number) => {
+    router.push(`/articles/edit/${id}`);
+  };
+  // Delete Article
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this article?')) return;
+    setDeleting(true);
+    try {
+      await callApi(`/api/articles/${id}`, { method: 'DELETE' });
+      toast.success('Article deleted successfully');
+      router.push('/admin/articles'); // redirect back to list
+    } catch (err) {
+      console.error('Failed to delete article:', err);
+      toast.error('Failed to delete article');
+    } finally {
+      setDeleting(false);
     }
   };
 
-  if (loading) return <p className="text-center text-lg">Loading...</p>;
+  if (loading || !article)
+    return <p className="text-center text-lg">Loading...</p>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 py-10 px-6">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-indigo-700 mb-6 text-center">
-          📰 All Articles
-        </h1>
-
-        {articles.length === 0 ? (
-          <p className="text-gray-500 text-center">No articles found.</p>
-        ) : (
-          <div className="flex flex-col gap-8">
-            {articles.map((a) => (
-              <motion.div
-                key={a.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col md:flex-row-reverse bg-white border-2 border-gray-200 shadow-md rounded-xl overflow-hidden hover:shadow-lg hover:border-indigo-400 transition duration-300"
-              >
-                {/* 🖼️ Cover Image */}
-                {a.coverImageBase64 && (
-                  <img
-                    src={a.coverImageBase64}
-                    alt={a.title}
-                    className="w-full md:w-1/3 h-48 object-cover"
-                    loading="lazy"
-                  />
-                )}
-
-                {/* 📝 Article Info */}
-                <div className="p-5 md:w-2/3 space-y-3">
-                  <h2 className="text-xl font-semibold text-gray-800">
-                    {a.title}
-                  </h2>
-
-                  <p className="text-gray-600 line-clamp-3">
-                    {extractPlainText(a.content).slice(0, 200)}...
-                  </p>
-
-                  {/* 🏷️ Tags */}
-                  {a.tags && a.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {a.tags.map((t) => (
-                        <span
-                          key={t.id}
-                          className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md"
-                        >
-                          #{t.name}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* 👤 Author & 📂 Category */}
-                  <div className="text-sm text-gray-500 mt-3 flex flex-wrap gap-4">
-                    {a.author?.name && <span>👤 {a.author.name}</span>}
-                    {a.category?.name && <span>📂 {a.category.name}</span>}
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        a.status === 'ACTIVE'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {a.status}
-                    </span>
-                  </div>
-
-                  {/*Actions */}
-                  <div className="flex gap-3 mt-4">
-                    <button
-                      onClick={() => handleToggleStatus(a.id, a.status)}
-                      disabled={updatingId === a.id}
-                      className={`text-sm px-3 py-1 rounded-md text-white ${
-                        a.status === 'ACTIVE'
-                          ? 'bg-yellow-500 hover:bg-yellow-600'
-                          : 'bg-green-500 hover:bg-green-600'
-                      } transition`}
-                    >
-                      {updatingId === a.id
-                        ? 'Updating...'
-                        : a.status === 'ACTIVE'
-                          ? 'Deactivate'
-                          : 'Activate'}
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+      <div className="max-w-4xl mx-auto bg-white border-2 border-gray-200 shadow-md rounded-xl overflow-hidden">
+        {/* Cover Image */}
+        {article.coverImageBase64 && (
+          <img
+            src={article.coverImageBase64}
+            alt={article.title}
+            className="w-full h-64 object-cover"
+          />
         )}
+
+        <div className="p-6 space-y-3">
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold text-gray-800">
+              {article.title}
+            </h1>
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                article.status === 'ACTIVE'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-red-100 text-red-700'
+              }`}
+            >
+              {article.status}
+            </span>
+          </div>
+
+          <p className="text-gray-700 whitespace-pre-line">
+            {extractPlainText(article.content)}
+          </p>
+
+          {/*  Tags */}
+          {article.tags && article.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {article.tags.map((t) => (
+                <span
+                  key={t.id}
+                  className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md"
+                >
+                  #{t.name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/*Author &Category */}
+          <div className="text-sm text-gray-500 mt-4 flex flex-wrap gap-4">
+            {article.author?.name && <span>👤 {article.author.name}</span>}
+            {article.category?.name && <span>📂 {article.category.name}</span>}
+          </div>
+
+          {/*Action Buttons */}
+          <div className="flex gap-4 mt-6">
+            {/* Edit Button */}
+            <button
+              onClick={() => handleEdit(article.id)}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm transition"
+            >
+              ✏️Edit
+            </button>
+
+            {/* Toggle Status */}
+            <button
+              onClick={handleToggleStatus}
+              disabled={updating}
+              className={`px-4 py-2 rounded-md text-sm text-white transition ${
+                article.status === 'ACTIVE'
+                  ? 'bg-yellow-500 hover:bg-yellow-600'
+                  : 'bg-green-500 hover:bg-green-600'
+              }`}
+            >
+              {updating
+                ? 'Updating...'
+                : article.status === 'ACTIVE'
+                  ? 'Deactivate'
+                  : 'Activate'}
+            </button>
+
+            {/* Delete */}
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm transition"
+            >
+              {deleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
