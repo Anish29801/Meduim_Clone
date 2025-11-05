@@ -6,5 +6,12 @@ export interface CreateUserInput {
   bio?: string;
   avatar?: string;
   gender?: string;
-  role?: "USER" | "ADMIN";
+  role?: 'USER' | 'ADMIN';
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
 }

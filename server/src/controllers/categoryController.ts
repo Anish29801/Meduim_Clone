@@ -1,54 +1,67 @@
 import { Request, Response } from 'express';
-import prisma from '../prisma';
+import * as categoryService from '../services/categoryService';
 
-// GET all categories
-export const getCategories = async (_req: Request, res: Response) => {
+//get categories
+export const getCategories = async (req: Request, res: Response) => {
   try {
-    const categories = await prisma.category.findMany({});
+    const page = parseInt((req.query.page as string) || '1', 10);
+    const limit = parseInt((req.query.limit as string) || '10', 10);
 
-    console.log('categories', categories);
-    res.json(categories);
-    // Real DB use karna ho to ye uncomment kar do
-    // const categoriesFromDB = await prisma.category.findMany({ include: { articles: true } });
-    // res.json(categoriesFromDB);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch categories' });
+    const result = await categoryService.getAllCategories(page, limit);
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-// CREATE category
+//create category
 export const createCategory = async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
-    const category = await prisma.category.create({ data: { name } });
+    const category = await categoryService.createCategory(name);
     res.status(201).json(category);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
-// UPDATE category
+//update category
 export const updateCategory = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { name } = req.body;
-    const category = await prisma.category.update({
-      where: { id },
-      data: { name },
-    });
+    const category = await categoryService.updateCategory(id, name);
     res.json(category);
-  } catch {
-    res.status(400).json({ error: 'Failed to update category' });
+  } catch (error) {
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
-// DELETE category
+//delete category
 export const deleteCategory = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    await prisma.category.delete({ where: { id } });
-    res.status(204).send();
-  } catch {
-    res.status(400).json({ error: 'Failed to delete category' });
+
+    if (isNaN(id)) {
+      return res.status(400).json({ message: 'Invalid category id' });
+    }
+    await categoryService.deleteCategory(id);
+    res.json({ message: 'category deleted succesfully' });
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
   }
 };
+
+// export const getCategoriesController = async (req: Request, res: Response) => {
+//   try {
+//     const page = parseInt((req.query.page as string) || 1,;
+//     const limit = parseInt(req.query.limit as string) || 5;
+
+//     const result = await categoryService.getPaginationCategory(page, limit);
+//     res.json(result);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Something went wrong' });
+//   }
+// };

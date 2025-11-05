@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useApi } from "@/app/hooks/useApi";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import LexicalEditor from "../components/lecxicaleditor";
+import { useApi } from '@/app/hooks/useApi';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import LexicalEditor from '../components/lecxicaleditor';
 
 // 🧩 Interfaces
 interface Tag {
@@ -35,11 +35,11 @@ export default function EditArticlePage({ articleId }: Props) {
   const { callApi, loading } = useApi<Article>();
   const [article, setArticle] = useState<Article | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [tags, setTags] = useState<string>("");
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [tags, setTags] = useState<string>('');
   const [coverImage, setCoverImage] = useState<File | null>(null);
-  const [categoryId, setCategoryId] = useState<number | "">("");
+  const [categoryId, setCategoryId] = useState<number | ''>('');
   const router = useRouter();
 
   // 🔹 Load article details
@@ -49,15 +49,17 @@ export default function EditArticlePage({ articleId }: Props) {
         const data = await callApi(`/api/articles/${articleId}`);
         if (data) {
           setArticle(data);
-          setTitle(data.title || "");
-          setContent(data.content || "");
-          setCategoryId(data.categoryId ?? "");
-          setTags((data.tags && data.tags.map((t: Tag) => t.name).join(", ")) || "");
-          toast.success("Article loaded successfully!");
+          setTitle(data.title || '');
+          setContent(data.content || '');
+          setCategoryId(data.categoryId ?? '');
+          setTags(
+            (data.tags && data.tags.map((t: Tag) => t.name).join(', ')) || ''
+          );
+          toast.success('Article loaded successfully!');
         }
       } catch (err) {
-        console.error("Failed to fetch article", err);
-        toast.error("Failed to load article ❌");
+        console.error('Failed to fetch article', err);
+        toast.error('Failed to load article ❌');
       }
     }
 
@@ -68,10 +70,16 @@ export default function EditArticlePage({ articleId }: Props) {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const catData = await callApi("/api/categories");
-        setCategories(catData);
+        const res = await callApi('/api/categories');
+        const categoryArray: Category[] = Array.isArray(res)
+          ? res
+          : Array.isArray(res.data)
+            ? res.data
+            : [];
+
+        setCategories(categoryArray);
       } catch {
-        toast.error("Failed to load categories ❌");
+        toast.error('Failed to load categories ❌');
       }
     }
     fetchCategories();
@@ -88,28 +96,32 @@ export default function EditArticlePage({ articleId }: Props) {
   const handleUpdate = async () => {
     try {
       const formData = new FormData();
-      formData.append("title", title);
-      formData.append("content", content);
-      formData.append("categoryId", String(categoryId || 1));
-      formData.append("authorId", String(article?.authorId || 1));
-      formData.append("tags", JSON.stringify(tags.split(",").map((t: string) => t.trim())));
-      if (coverImage) formData.append("coverImage", coverImage);
+      formData.append('title', title);
+      formData.append('content', content);
+      formData.append('categoryId', String(categoryId || 1));
+      formData.append('authorId', String(article?.authorId || 1));
+      formData.append(
+        'tags',
+        JSON.stringify(tags.split(',').map((t: string) => t.trim()))
+      );
+      if (coverImage) formData.append('coverImage', coverImage);
 
       await callApi(`/api/articles/${articleId}`, {
-        method: "PATCH",
+        method: 'PATCH',
         data: formData,
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      toast.success("Article updated successfully 🎉");
-      setTimeout(() => router.push("/articles/view"), 400);
+      toast.success('Article updated successfully 🎉');
+      setTimeout(() => router.push('/articles/view'), 400);
     } catch (err) {
       console.error(err);
-      toast.error("Update failed ❌");
+      toast.error('Update failed ❌');
     }
   };
 
-  if (loading || !article) return <p className="text-center mt-10">Loading article...</p>;
+  if (loading || !article)
+    return <p className="text-center mt-10">Loading article...</p>;
 
   // 🔹 JSX
   return (
@@ -156,8 +168,11 @@ export default function EditArticlePage({ articleId }: Props) {
       {/* Tag Preview */}
       {tags && (
         <div className="flex flex-wrap gap-2">
-          {tags.split(",").map((tag: string, i: number) => (
-            <span key={i} className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm">
+          {tags.split(',').map((tag: string, i: number) => (
+            <span
+              key={i}
+              className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm"
+            >
               #{tag.trim()}
             </span>
           ))}

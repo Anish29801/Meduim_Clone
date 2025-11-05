@@ -59,7 +59,12 @@ export default function Sidebar() {
       href: '/admin/articles',
       private: false,
     },
-    // { name: "Reports", icon: ChartBarIcon, href: "", private: false },
+    {
+      name: 'Manage Categories',
+      icon: ChartBarIcon,
+      href: '/categories',
+      private: false,
+    },
     // { name: "Settings", icon: Cog6ToothIcon, href: "", private: false },
   ];
 
