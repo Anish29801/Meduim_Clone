@@ -16,7 +16,6 @@ export interface LoginProps {
   onSubmit?: (email: string, password: string) => void;
 }
 
-
 export interface UpdateUserProps {
   userId?: string;
   onUpdate?: () => void;
@@ -70,4 +69,17 @@ export interface Article {
 
 export interface PostPageProps {
   params: { id: string };
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  _count?: { articles: number };
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
 }
