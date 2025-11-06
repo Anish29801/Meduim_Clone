@@ -58,7 +58,13 @@ export default function categoryPage() {
       await callApi(`/api/categories/${id}`, { method: 'delete' });
       toast.success('Category deleted');
       fetchCategories();
-    } catch (error) {}
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to delete category';
+      toast.error(message);
+    }
   };
 
   return (

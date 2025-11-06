@@ -94,8 +94,17 @@ export default function CategoryTable({
                   </button>
                 )}
                 <button
-                  onClick={() => onDelete(cat.id)}
-                  className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1 rounded-lg shadow-md transition duration-200 ease-in-out"
+                  onClick={async () => {
+                    try {
+                      await onDelete(cat.id);
+                    } catch (error) {}
+                  }}
+                  disabled={cat._count?.articles! > 0}
+                  className={`${
+                    cat._count?.articles! > 0
+                      ? 'bg-gray-300 cursor-not-allowed'
+                      : 'bg-red-600 hover:bg-red-700'
+                  } text-white font-semibold px-3 py-1 rounded-lg shadow-md transition duration-200 ease-in-out`}
                 >
                   Delete
                 </button>
