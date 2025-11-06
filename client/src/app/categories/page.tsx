@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { useApi } from '../hooks/useApi';
+import { useApi } from '@/app/hooks/useApi';
 import { Category, PaginatedResponse } from '../type';
 import CategoryTable from '../components/CategoryTable';
 import CategoryForm from '../components/CategoryForm';
-import AdminLayout from '../admin/layout';
+import { useRouter } from 'next/navigation';
 
 export default function categoryPage() {
   const { data, loading, callApi } = useApi<PaginatedResponse<Category[]>>();
@@ -14,6 +14,7 @@ export default function categoryPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
+  const router = useRouter();
 
   //fetch category
   const fetchCategories = async () => {
@@ -67,8 +68,18 @@ export default function categoryPage() {
     }
   };
 
+  const goBack = () => {
+    router.back();
+  };
+
   return (
-    <AdminLayout>
+    <>
+      <button
+        onClick={goBack}
+        className="px-2 py-1 bg-blue-500 text-white rounded m-2"
+      >
+        Back
+      </button>
       <div className="p-6 max-w-4xl mx-auto">
         <Toaster position="top-right" />
         <h1 className="text-2xl font-bold mb-4">Manage Categories</h1>
@@ -104,6 +115,6 @@ export default function categoryPage() {
           </>
         )}
       </div>
-    </AdminLayout>
+    </>
   );
 }

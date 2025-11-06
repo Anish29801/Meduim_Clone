@@ -19,7 +19,7 @@ export default function LogoLink() {
 
   return (
     <a
-      href="#"
+      href="/admin"
       onClick={handleClick}
       className="flex items-center space-x-2 cursor-pointer"
     >
