@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
+import { Home, FolderCog } from 'lucide-react';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -61,7 +62,7 @@ export default function Sidebar() {
     },
     {
       name: 'Manage Categories',
-      icon: ChartBarIcon,
+      icon: FolderCog,
       href: '/categories',
       private: false,
     },
