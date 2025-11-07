@@ -77,7 +77,7 @@ export default function SingleArticlePage() {
     }
   };
   const handleEdit = (id: number) => {
-    router.push(`/articles/edit/${id}`);
+    router.push(`/admin/articles/edit/${id}`);
   };
   // Delete Article
   const handleDelete = async () => {

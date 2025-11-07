@@ -35,6 +35,7 @@ export default function CategoryTable({
       setEditName('');
     }
   };
+  const goback = () => {};
 
   return (
     <table className="w-full border border-gray-300 rounded-lg text-sm text-left">

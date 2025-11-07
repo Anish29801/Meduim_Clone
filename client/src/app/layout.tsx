@@ -1,5 +1,3 @@
-'use client';
-
 import { AuthProvider } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import '@/app/globals.css';
@@ -9,6 +7,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  console.log(children);
+
   return (
     <html lang="en">
       <body className="antialiased bg-gray-50 text-gray-900">

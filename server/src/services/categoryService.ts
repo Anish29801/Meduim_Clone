@@ -53,11 +53,10 @@ export const deleteCategory = async (id: number): Promise<Category> => {
   if (relatedArticles) {
     throw new Error('Cannot delete: Category has related articles.');
   }
-
   return await prisma.category.delete({
     where: { id },
   });
 };
-export function getCategories(page: number, limit: number) {
-  throw new Error('Function not implemented.');
-}
+// export function getCategories(page: number, limit: number) {
+//   throw new Error('Function not implemented.');
+// }
