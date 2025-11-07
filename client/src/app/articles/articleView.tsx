@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useApi } from "../hooks/useApi";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
-import ClientLayout from "../components/layouts/client-layout";
+import React, { useEffect, useState } from 'react';
+import { useApi } from '../hooks/useApi';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import ClientLayout from '../components/layouts/client-layout';
+import Dompurify from 'dompurify';
 
 interface Article {
   id: number;
@@ -21,11 +22,13 @@ function extractPlainText(lexicalJSON: string): string {
   try {
     const parsed = JSON.parse(lexicalJSON);
     const root = parsed.root;
-    if (!root?.children) return "";
+    if (!root?.children) return '';
 
     return root.children
-      .map((p: any) => (p.children || []).map((child: any) => child.text || "").join(" "))
-      .join("\n")
+      .map((p: any) =>
+        (p.children || []).map((child: any) => child.text || '').join(' ')
+      )
+      .join('\n')
       .trim();
   } catch {
     // Fallback if content is not JSON
@@ -42,10 +45,10 @@ export default function ArticlePage() {
   useEffect(() => {
     async function fetchArticles() {
       try {
-        const data = await callApi("/api/articles");
+        const data = await callApi('/api/articles');
         setArticles(data);
       } catch (err) {
-        console.error("Failed to fetch articles:", err);
+        console.error('Failed to fetch articles:', err);
       }
     }
     fetchArticles();
@@ -58,14 +61,14 @@ export default function ArticlePage() {
 
   // 🔹 Delete article
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this article?")) return;
+    if (!confirm('Are you sure you want to delete this article?')) return;
     try {
-      await callApi(`/api/articles/${id}`, { method: "DELETE" });
+      await callApi(`/api/articles/${id}`, { method: 'DELETE' });
       setArticles((prev) => prev.filter((a) => a.id !== id));
-      toast.success("Article deleted successfully!");
+      toast.success('Article deleted successfully!');
     } catch (error) {
-      console.error("Delete failed:", error);
-      toast.error("Failed to delete article");
+      console.error('Delete failed:', error);
+      toast.error('Failed to delete article');
     }
   };
 
@@ -74,7 +77,9 @@ export default function ArticlePage() {
   return (
     <ClientLayout>
       <div className="max-w-6xl mx-auto p-8">
-        <h1 className="text-3xl font-bold text-indigo-700 mb-6">📰 All Articles</h1>
+        <h1 className="text-3xl font-bold text-indigo-700 mb-6">
+          📰 All Articles
+        </h1>
 
         {articles.length === 0 ? (
           <p className="text-gray-500 text-center">No articles found.</p>
@@ -97,11 +102,18 @@ export default function ArticlePage() {
 
                 {/* 📝 Article Info */}
                 <div className="p-5 md:w-2/3 space-y-3">
-                  <h2 className="text-xl font-semibold text-gray-800">{a.title}</h2>
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    {a.title}
+                  </h2>
 
-                  <p className="text-gray-600 line-clamp-3">
-                    {extractPlainText(a.content).slice(0, 200)}...
-                  </p>
+                  <p
+                    className="text-gray-600 line-clamp-3"
+                    dangerouslySetInnerHTML={{
+                      __html: Dompurify.sanitize(
+                        extractPlainText(a.content).slice(0, 500)
+                      ),
+                    }}
+                  />
 
                   {/* 🏷️ Tags */}
                   {a.tags && a.tags.length > 0 && (
@@ -120,7 +132,9 @@ export default function ArticlePage() {
                   {/* 👤 Author & 📂 Category */}
                   <div className="text-sm text-gray-500 mt-3">
                     {a.author?.name && <span>👤 {a.author.name}</span>}
-                    {a.category?.name && <span className="ml-4">📂 {a.category.name}</span>}
+                    {a.category?.name && (
+                      <span className="ml-4">📂 {a.category.name}</span>
+                    )}
                   </div>
 
                   {/* 🔘 Actions */}
