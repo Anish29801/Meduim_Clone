@@ -1,14 +1,15 @@
-"use client";
+'use client';
 
-import React, { use } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useApi } from "@/app/hooks/useApi";
-import { Article } from "@/app/type";
-import { useAuth } from "@/app/context/AuthContext"; // ✅ Import Auth Context
-import male from "@/app/avatar/male.svg";
-import female from "@/app/avatar/female.svg";
+import React, { use } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useApi } from '@/app/hooks/useApi';
+import { Article } from '@/app/type';
+import { useAuth } from '@/app/context/AuthContext'; // ✅ Import Auth Context
+import male from '@/app/avatar/male.svg';
+import female from '@/app/avatar/female.svg';
+import DOMPurify from 'dompurify';
 
 type PostPageProps = {
   params: Promise<{ id: string }>;
@@ -25,9 +26,12 @@ export default function PostPage({ params }: PostPageProps) {
   const { id } = use(params);
   const { callApi, loading, error } = useApi();
   const [article, setArticle] = useState<Article | null>(null);
-  const [author, setAuthor] = useState<{ fullName: string; avatar: string } | null>(null);
+  const [author, setAuthor] = useState<{
+    fullName: string;
+    avatar: string;
+  } | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
-  const [comment, setComment] = useState("");
+  const [comment, setComment] = useState('');
 
   // ✅ Get user login state
   const { user, isLoggedIn } = useAuth();
@@ -45,7 +49,7 @@ export default function PostPage({ params }: PostPageProps) {
         const commentList = await callApi(`/api/comments?articleId=${id}`);
         setComments(commentList);
       } catch (err) {
-        console.error("Failed to fetch article or comments:", err);
+        console.error('Failed to fetch article or comments:', err);
       }
     };
 
@@ -58,7 +62,7 @@ export default function PostPage({ params }: PostPageProps) {
 
     try {
       const newComment = await callApi(`/api/comments`, {
-        method: "POST",
+        method: 'POST',
         data: {
           content: comment,
           articleId: Number(id),
@@ -66,23 +70,48 @@ export default function PostPage({ params }: PostPageProps) {
         },
       });
       setComments((prev) => [...prev, newComment]);
-      setComment("");
+      setComment('');
     } catch (err) {
-      console.error("❌ Failed to post comment:", err);
+      console.error('❌ Failed to post comment:', err);
     }
   };
 
+  function extractPlainText(lexicalJSON: string): string {
+    try {
+      const parsed = JSON.parse(lexicalJSON);
+      const root = parsed.root;
+      if (!root?.children) return '';
+
+      return root.children
+        .map((p: any) =>
+          (p.children || []).map((child: any) => child.text || '').join(' ')
+        )
+        .join('\n')
+        .trim();
+    } catch {
+      // Fallback if content is not JSON
+      return lexicalJSON.slice(0, 200);
+    }
+  }
+
   if (loading) return <div className="p-10 text-center">Loading...</div>;
-  if (error) return <div className="p-10 text-center text-red-500">{error}</div>;
-  if (!article) return <div className="p-10 text-center text-gray-500">Post not found.</div>;
+  if (error)
+    return <div className="p-10 text-center text-red-500">{error}</div>;
+  if (!article)
+    return (
+      <div className="p-10 text-center text-gray-500">Post not found.</div>
+    );
 
   const formattedDate = article.createdAt
     ? new Date(article.createdAt).toDateString()
-    : "Unknown date";
+    : 'Unknown date';
 
   return (
     <main className="max-w-3xl mx-auto p-6">
-      <Link href="/dashboard" className="text-green-600 hover:underline text-sm">
+      <Link
+        href="/dashboard"
+        className="text-green-600 hover:underline text-sm"
+      >
         ← Back to Dashboard
       </Link>
 
@@ -91,7 +120,7 @@ export default function PostPage({ params }: PostPageProps) {
       {author && (
         <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
           <Image
-            src={author.avatar === "male" ? male : female}
+            src={author.avatar === 'male' ? male : female}
             alt={`${author.fullName}'s avatar`}
             width={30}
             height={30}
@@ -115,7 +144,11 @@ export default function PostPage({ params }: PostPageProps) {
 
       <article className="prose prose-gray max-w-none text-gray-800 mb-10">
         <p>
-          <span dangerouslySetInnerHTML={{ __html: article.content }}></span>
+          <span
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(extractPlainText(article.content)),
+            }}
+          ></span>
         </p>
       </article>
 
@@ -128,11 +161,11 @@ export default function PostPage({ params }: PostPageProps) {
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder={
-            isLoggedIn ? "Write your comment..." : "Login to post a comment"
+            isLoggedIn ? 'Write your comment...' : 'Login to post a comment'
           }
           disabled={!isLoggedIn}
           className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none resize-none ${
-            !isLoggedIn ? "bg-gray-100 cursor-not-allowed text-gray-400" : ""
+            !isLoggedIn ? 'bg-gray-100 cursor-not-allowed text-gray-400' : ''
           }`}
           rows={3}
         />
@@ -142,11 +175,11 @@ export default function PostPage({ params }: PostPageProps) {
           disabled={!isLoggedIn || !comment.trim()}
           className={`mt-3 px-5 py-2 rounded-lg text-white transition-colors ${
             isLoggedIn
-              ? "bg-green-600 hover:bg-green-700"
-              : "bg-gray-400 cursor-not-allowed"
+              ? 'bg-green-600 hover:bg-green-700'
+              : 'bg-gray-400 cursor-not-allowed'
           }`}
         >
-          {isLoggedIn ? "Post Comment" : "Login to Comment"}
+          {isLoggedIn ? 'Post Comment' : 'Login to Comment'}
         </button>
 
         {/* 🟩 Display Comments */}

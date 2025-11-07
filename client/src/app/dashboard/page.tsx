@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import PostCard from "../components/PostCard";
-import { useApi } from "../hooks/useApi";
-import ClientLayout from "../components/layouts/client-layout";
+import { useEffect, useState } from 'react';
+import PostCard from '../components/PostCard';
+import { useApi } from '../hooks/useApi';
+import ClientLayout from '../components/layouts/client-layout';
 
 interface Post {
   id: number;
@@ -28,7 +28,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const articles = await callApi("/api/articles");
+        const articles = await callApi('/api/articles');
 
         const mappedPosts: Post[] = articles.map((a: any) => ({
           id: a.id,
@@ -37,28 +37,47 @@ export default function Dashboard() {
           views: a.views || 0,
           comments: 0,
           daysAgo: Math.floor(
-            (Date.now() - new Date(a.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+            (Date.now() - new Date(a.createdAt).getTime()) /
+              (1000 * 60 * 60 * 24)
           ),
-          description: a.content?.slice(0, 120) + "...",
+          description: extractPlainText(a.content).slice(0, 120) + '...',
           image: a.coverImage,
-          content: a.content,
+          content: extractPlainText(a.content),
           authorId: a.authorId,
           tags: a.tags,
           author: a.author?.username,
-          authorAvatar: a.author?.avatar || "/default-avatar.png",
+          authorAvatar: a.author?.avatar || '/default-avatar.png',
         }));
 
         setPosts(mappedPosts);
       } catch (err) {
-        console.error("Failed to fetch posts", err);
+        console.error('Failed to fetch posts', err);
       }
     };
 
     fetchPosts();
   }, [callApi]);
 
+  function extractPlainText(lexicalJSON: string): string {
+    try {
+      const parsed = JSON.parse(lexicalJSON);
+      const root = parsed.root;
+      if (!root?.children) return '';
+
+      return root.children
+        .map((p: any) =>
+          (p.children || []).map((child: any) => child.text || '').join(' ')
+        )
+        .join('\n')
+        .trim();
+    } catch {
+      // Fallback if not JSON
+      return lexicalJSON.replace(/<[^>]+>/g, '').slice(0, 200);
+    }
+  }
   if (loading) return <div className="p-10 text-center">Loading posts...</div>;
-  if (error) return <div className="p-10 text-center text-red-500">{error}</div>;
+  if (error)
+    return <div className="p-10 text-center text-red-500">{error}</div>;
 
   return (
     <ClientLayout>

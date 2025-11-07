@@ -66,6 +66,13 @@ export default function Sidebar() {
       href: '/categories',
       private: false,
     },
+    {
+      name: 'Articles',
+      icon: NewspaperIcon,
+      href: '/dashboard',
+      current: false,
+      private: true,
+    },
     // { name: "Settings", icon: Cog6ToothIcon, href: "", private: false },
   ];
 
