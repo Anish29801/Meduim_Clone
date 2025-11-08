@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "migration:reset": "npx prisma migrate reset",
+    "prisma:generate": "npx prisma generate"
   },
   "keywords": [],
   "author": "",
