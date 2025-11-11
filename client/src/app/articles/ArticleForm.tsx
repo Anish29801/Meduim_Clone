@@ -143,23 +143,25 @@ export default function ArticleForm() {
           </button>
         </header>
 
-        {/* ===== Main Content ===== */}
         <main className="flex flex-1 px-10 overflow-hidden">
           <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10 flex-1 overflow-y-auto">
             {/* ===== LEFT PANEL (Meta Info) ===== */}
-            <aside className="lg:col-span-1 md-5 space-y-8 sticky top-24 self-start">
+            <aside
+              className="lg:col-span-1 space-y-8 sticky top-24 self-start 
+                      bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm"
+            >
               {/* Title */}
               <input
                 type="text"
                 placeholder="Title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full mb-5 text-5xl font-serif font-semibold bg-transparent border-none focus:outline-none placeholder-gray-400"
+                className="w-full mb-5 text-4xl font-serif font-semibold bg-transparent border-b border-gray-300 focus:outline-none focus:border-gray-500 placeholder-gray-400"
               />
 
               {/* Category */}
               <div>
-                <label className="block mb-2 text-gray-900 font-extralight">
+                <label className="block mb-2 text-gray-900 font-medium">
                   Category
                 </label>
                 <select
@@ -169,7 +171,7 @@ export default function ArticleForm() {
                       e.target.value ? Number(e.target.value) : null
                     )
                   }
-                  className="w-full mb-5 bg-white border border-gray-200 rounded-lg px-4 py-3 text-base focus:ring-2 focus:ring-gray-400 focus:outline-none transition"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-400 focus:outline-none transition"
                 >
                   <option value="">Select category</option>
                   {categories?.map((c) => (
@@ -182,11 +184,9 @@ export default function ArticleForm() {
 
               {/* Tags */}
               <div>
-                <label className="block mb-2 text-gray-900 font-extralight">
+                <label className="block mb-2 text-gray-900 font-medium">
                   Tags
                 </label>
-
-                {/* Input + Add Button */}
                 <div className="flex items-center gap-3">
                   <input
                     type="text"
@@ -194,7 +194,7 @@ export default function ArticleForm() {
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-                    className="flex-1 mb-5 px-4 py-3 bg-white rounded-lg text-base border border-gray-200 focus:ring-2 focus:ring-gray-300 focus:outline-none transition-all shadow-sm"
+                    className="flex-1 px-4 py-3 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-400 focus:outline-none transition"
                   />
                   <button
                     type="button"
@@ -205,17 +205,16 @@ export default function ArticleForm() {
                   </button>
                 </div>
 
-                {/* Tag Chips */}
                 <div className="flex flex-wrap gap-3 mt-2">
                   {tags.map((tag, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-2 bg-gray-100 text-gray-800 px-4 py-2 rounded-full text-sm hover:bg-gray-200 transition"
+                      className="flex items-center gap-2 bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm hover:bg-gray-300 transition"
                     >
                       <span className="font-medium">#{tag}</span>
                       <button
                         onClick={() => handleRemoveTag(tag)}
-                        className="text-gray-400 hover:text-red-500 transition"
+                        className="text-gray-500 hover:text-red-500 transition"
                       >
                         ✕
                       </button>
@@ -226,12 +225,12 @@ export default function ArticleForm() {
 
               {/* Cover Image */}
               <div>
-                <label className="block mb-2 text-gray-900 font-extralight">
+                <label className="block mb-2 text-gray-900 font-medium">
                   Cover Image
                 </label>
 
                 <div
-                  className="rounded-xl bg-gray-50 hover:bg-gray-100 p-6 text-center transition-all cursor-pointer border border-gray-200 hover:border-gray-300"
+                  className="rounded-xl bg-white hover:bg-gray-50 p-6 text-center transition-all cursor-pointer border border-gray-300 hover:border-gray-400"
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
                   onClick={() => fileInputRef.current?.click()}
@@ -241,7 +240,7 @@ export default function ArticleForm() {
                       <img
                         src={URL.createObjectURL(coverFile)}
                         alt="Cover"
-                        className="mx-auto mb-3 h-56 w-full object-cover rounded-xl shadow-sm"
+                        className="mx-auto mb-3 h-56 w-full object-cover rounded-xl shadow"
                       />
                       <button
                         type="button"
@@ -292,12 +291,12 @@ export default function ArticleForm() {
             </aside>
 
             {/* ===== RIGHT PANEL (Lexical Editor) ===== */}
-            <section className="lg:col-span-2 bg-white rounded-xl p-2 flex flex-col flex-1">
-              <label className="block mb-3 text-gray-800 font-medium text-lg">
+            <section className="lg:col-span-2 bg-white rounded-xl shadow-md p-6 flex flex-col flex-1 border border-gray-200">
+              <label className="block mb-3 text-gray-800 font-semibold text-lg">
                 Write your story
               </label>
 
-              <div className="flex-1 bg-white p-4 overflow-y-auto">
+              <div className="flex-1 bg-white p-4 overflow-y-auto rounded-md border border-gray-100">
                 <LexicalEditor onChange={setContent} />
               </div>
             </section>
