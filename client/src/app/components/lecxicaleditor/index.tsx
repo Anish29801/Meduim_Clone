@@ -63,8 +63,6 @@ function EditorContent({
     } catch {
       editor.update(() => {
         const htmlString = $generateHtmlFromNodes(editor);
-        console.log(htmlString);
-
         const parser = new DOMParser();
         const dom = parser.parseFromString(initialContent, 'text/html');
         const nodes = $generateNodesFromDOM(editor, dom);
@@ -84,12 +82,12 @@ function EditorContent({
   };
 
   return (
-    <div className="border rounded-2xl shadow-md bg-white p-4 transition-all hover:shadow-lg duration-200">
+    <div className="rounded-2xl shadow-md bg-white p-4 transition-all hover:shadow-lg duration-200">
       {!readOnly && <Toolbox />}
       <div className="prose max-w-none">
         <RichTextPlugin
           contentEditable={
-            <ContentEditable className="min-h-[150px] min-w-[700px] outline-none px-2 py-1 text-[16px]" />
+            <ContentEditable className="min-h-[500px] min-w-[700px] outline-none px-2 py-1 text-[24px]" />
           }
           placeholder={
             <div className="text-gray-400">Start writing your article...</div>

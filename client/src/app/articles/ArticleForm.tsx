@@ -122,154 +122,187 @@ export default function ArticleForm() {
 
   return (
     <ClientLayout>
-      <div className="min-h-screen w-full bg-gradient-to-br from-white-100 via-white-100 to-white-100 flex items-start justify-evenly p-10">
-        <div>
-          {' '}
-          {/* Header */}
-          <div className="text-center space-y-1">
-            <h2 className="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 bg-clip-text text-transparent drop-shadow-sm">
+      <div className="flex flex-col h-screen bg-[#fafafa] overflow-y-auto">
+        {/* ===== Top Bar ===== */}
+        <header className="sticky top-0 z-20 px-10 py-4 flex items-center justify-between ">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
               📝 Create New Article
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-500 text-sm">
               Fill in the details below to publish your article
             </p>
           </div>
-          {/* Title */}
-          <div className="flex flex-col">
-            <label className="mb-2 text-indigo-900 font-semibold text-2xl">
-              Title
-            </label>
-            <input
-              type="text"
-              placeholder="Article Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="mb-2 w-full px-4 py-3 text-base rounded-xl bg-white/80 border border-indigo-200 placeholder-indigo-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-300"
-            />
-          </div>
-          {/* Category */}
-          <div className="flex flex-col">
-            <label className="mb-2 text-indigo-900 font-semibold text-2xl">
-              Category
-            </label>
-            <select
-              value={categoryId ?? ''}
-              onChange={(e) =>
-                setCategoryId(e.target.value ? Number(e.target.value) : null)
-              }
-              className="w-full mb-2 px-4 py-3 rounded-xl bg-white/80 border border-indigo-200 shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-300"
-            >
-              <option value="">Select a category</option>
-              {categories?.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          {/* Cover Image */}
-          <div className="flex flex-col">
-            <label className="mb-2 text-indigo-900 font-semibold text-2xl">
-              Cover Image
-            </label>
-            <div
-              className="border-2 mb-2 border-dashed border-indigo-300 rounded-2xl p-6 text-center cursor-pointer hover:border-indigo-500 transition-all duration-300 bg-white/60 backdrop-blur-md relative"
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {coverFile ? (
-                <div className="relative">
-                  <img
-                    src={URL.createObjectURL(coverFile)}
-                    alt="Cover"
-                    className="mx-auto mb-2 h-48 object-cover rounded-xl shadow-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeCoverImage();
-                    }}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 shadow-md"
-                  >
-                    ×
-                  </button>
-                </div>
-              ) : (
-                <p className="text-indigo-600 font-medium">
-                  Drag & drop or click to upload cover image
-                </p>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputRef}
-                className="hidden"
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
-          {/* Tags */}
-          <div className="space-y-3">
-            <div className="flex gap-2 items-end">
-              <div className="flex flex-col flex-1">
-                <label className="mb-1 text-indigo-900 font-semibold text-2xl">
-                  Tags
-                </label>
-                <input
-                  type="text"
-                  placeholder="Add tag and press Enter"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-                  className="w-full mb-2 px-4 py-3 border border-indigo-200 rounded-xl bg-white/70 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-300"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleAddTag}
-                className="h-[46px] px-6 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl shadow hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 transition-all duration-300 font-medium"
-              >
-                Add
-              </button>
-            </div>
 
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 px-3 py-1 rounded-full shadow-sm"
-                >
-                  <span>#{tag}</span>
-                  <button
-                    onClick={() => handleRemoveTag(tag)}
-                    className="text-indigo-500 hover:text-red-500 transition"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Content */}
-          <div className="flex flex-col">
-            <label className="mb-2 text-indigo-900 font-semibold text-2xl">
-              Write your article
-            </label>
-            <div className="bg-white/80 rounded-xl shadow-inner p-4 border border-indigo-100">
-              <LexicalEditor onChange={setContent} />
-            </div>
-          </div>
-          {/* Save Button */}
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="w-full py-3 bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 text-white rounded-xl hover:from-indigo-600 hover:via-blue-600 hover:to-purple-600 disabled:opacity-50 shadow-lg transition-all duration-300 font-semibold"
+            className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-full disabled:opacity-50 transition-all"
           >
-            {isSaving ? 'Saving...' : 'Save Article'}
+            {isSaving ? 'Saving...' : 'Publish'}
           </button>
-        </div>
+        </header>
+
+        {/* ===== Main Content ===== */}
+        <main className="flex flex-1 px-10 overflow-hidden">
+          <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10 flex-1 overflow-y-auto">
+            {/* ===== LEFT PANEL (Meta Info) ===== */}
+            <aside className="lg:col-span-1 md-5 space-y-8 sticky top-24 self-start">
+              {/* Title */}
+              <input
+                type="text"
+                placeholder="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full mb-5 text-5xl font-serif font-semibold bg-transparent border-none focus:outline-none placeholder-gray-400"
+              />
+
+              {/* Category */}
+              <div>
+                <label className="block mb-2 text-gray-900 font-extralight">
+                  Category
+                </label>
+                <select
+                  value={categoryId ?? ''}
+                  onChange={(e) =>
+                    setCategoryId(
+                      e.target.value ? Number(e.target.value) : null
+                    )
+                  }
+                  className="w-full mb-5 bg-white border border-gray-200 rounded-lg px-4 py-3 text-base focus:ring-2 focus:ring-gray-400 focus:outline-none transition"
+                >
+                  <option value="">Select category</option>
+                  {categories?.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Tags */}
+              <div>
+                <label className="block mb-2 text-gray-900 font-extralight">
+                  Tags
+                </label>
+
+                {/* Input + Add Button */}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    placeholder="Add a tag..."
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+                    className="flex-1 mb-5 px-4 py-3 bg-white rounded-lg text-base border border-gray-200 focus:ring-2 focus:ring-gray-300 focus:outline-none transition-all shadow-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddTag}
+                    className="px-5 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition text-sm"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {/* Tag Chips */}
+                <div className="flex flex-wrap gap-3 mt-2">
+                  {tags.map((tag, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 bg-gray-100 text-gray-800 px-4 py-2 rounded-full text-sm hover:bg-gray-200 transition"
+                    >
+                      <span className="font-medium">#{tag}</span>
+                      <button
+                        onClick={() => handleRemoveTag(tag)}
+                        className="text-gray-400 hover:text-red-500 transition"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cover Image */}
+              <div>
+                <label className="block mb-2 text-gray-900 font-extralight">
+                  Cover Image
+                </label>
+
+                <div
+                  className="rounded-xl bg-gray-50 hover:bg-gray-100 p-6 text-center transition-all cursor-pointer border border-gray-200 hover:border-gray-300"
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {coverFile ? (
+                    <div className="relative">
+                      <img
+                        src={URL.createObjectURL(coverFile)}
+                        alt="Cover"
+                        className="mx-auto mb-3 h-56 w-full object-cover rounded-xl shadow-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeCoverImage();
+                        }}
+                        className="absolute top-3 right-3 bg-gray-800 text-white w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-500 transition-all"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mb-3">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-6 h-6 text-gray-500"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 16.5v-9m0 0L9 9m3-1.5l3 1.5m-7.5 8.25h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0 0016.5 4.5h-9A2.25 2.25 0 005.25 6.75v9a2.25 2.25 0 002.25 2.25z"
+                          />
+                        </svg>
+                      </div>
+                      <p className="text-gray-600 text-sm font-medium">
+                        Drag & drop or{' '}
+                        <span className="text-gray-900 font-semibold">
+                          click to upload
+                        </span>
+                      </p>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+            </aside>
+
+            {/* ===== RIGHT PANEL (Lexical Editor) ===== */}
+            <section className="lg:col-span-2 bg-white rounded-xl p-2 flex flex-col flex-1">
+              <label className="block mb-3 text-gray-800 font-medium text-lg">
+                Write your story
+              </label>
+
+              <div className="flex-1 bg-white p-4 overflow-y-auto">
+                <LexicalEditor onChange={setContent} />
+              </div>
+            </section>
+          </div>
+        </main>
       </div>
     </ClientLayout>
   );
