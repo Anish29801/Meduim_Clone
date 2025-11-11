@@ -60,7 +60,8 @@ export interface Article {
   title: string;
   author: { id: number; name: string };
   authorId: number;
-  coverImage?: string;
+  // coverImage?: string;
+  coverImageBase64?: string | null;
   categoryId: number;
   tags?: { id: number; name: string }[];
   content: string;

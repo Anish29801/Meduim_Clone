@@ -90,7 +90,7 @@ export default function PostPage({ params }: PostPageProps) {
         .trim();
     } catch {
       // Fallback if content is not JSON
-      return lexicalJSON.slice(0, 200);
+      return lexicalJSON;
     }
   }
 
@@ -132,13 +132,12 @@ export default function PostPage({ params }: PostPageProps) {
         </div>
       )}
 
-      {article.coverImage && (
-        <Image
-          src={article.coverImage}
+      {article.coverImageBase64 && (
+        <img
+          src={article.coverImageBase64}
           alt={article.title}
-          width={800}
-          height={400}
-          className="rounded-lg mb-6"
+          className="w-full md:w-1/3 h-48 object-cover"
+          loading="lazy"
         />
       )}
 

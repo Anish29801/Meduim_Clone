@@ -5,6 +5,7 @@ import { useApi } from '@/app/hooks/useApi';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import Dompurify from 'dompurify';
 
 interface Article {
   id: number;
@@ -126,9 +127,14 @@ export default function SingleArticlePage() {
             </span>
           </div>
 
-          <p className="text-gray-700 whitespace-pre-line">
-            {extractPlainText(article.content)}
-          </p>
+          <p
+            className="text-gray-600 line-clamp-3"
+            dangerouslySetInnerHTML={{
+              __html: Dompurify.sanitize(
+                extractPlainText(article.content).slice(0, 500)
+              ),
+            }}
+          />
 
           {/*  Tags */}
           {article.tags && article.tags.length > 0 && (
