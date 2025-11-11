@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useApi } from '@/app/hooks/useApi';
 import { Article } from '@/app/type';
-import { useAuth } from '@/app/context/AuthContext'; // ✅ Import Auth Context
+import { useAuth } from '@/app/context/AuthContext';
 import male from '@/app/avatar/male.svg';
 import female from '@/app/avatar/female.svg';
 import DOMPurify from 'dompurify';
@@ -41,7 +41,14 @@ export default function PostPage({ params }: PostPageProps) {
     const fetchData = async () => {
       try {
         const result = await callApi(`/api/articles/${id}`);
-        setArticle(result);
+        let coverImageBase64: string | null = null;
+        if (result.coverImageBytes) {
+          const byteArray = Object.values(result.coverImageBytes) as number[];
+          coverImageBase64 = `data:image/png;base64,${byteArrayToBase64(byteArray)}`;
+        }
+        setArticle({ ...result, coverImageBase64 });
+
+        setArticle({ ...result, coverImageBase64 });
 
         const authorInfo = await callApi(`/api/users/info/${result.authorId}`);
         setAuthor(authorInfo);
@@ -76,6 +83,16 @@ export default function PostPage({ params }: PostPageProps) {
     }
   };
 
+  function byteArrayToBase64(bytes: number[]): string {
+    let binary = '';
+    const chunkSize = 0x8000; // 32 KB chunks
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.slice(i, i + chunkSize);
+      binary += String.fromCharCode(...chunk);
+    }
+    return btoa(binary);
+  }
+
   function extractPlainText(lexicalJSON: string): string {
     try {
       const parsed = JSON.parse(lexicalJSON);
@@ -105,6 +122,7 @@ export default function PostPage({ params }: PostPageProps) {
   const formattedDate = article.createdAt
     ? new Date(article.createdAt).toDateString()
     : 'Unknown date';
+  let coverImageSrc: string | null = null;
 
   return (
     <main className="max-w-3xl mx-auto p-6">
@@ -131,14 +149,15 @@ export default function PostPage({ params }: PostPageProps) {
           </span>
         </div>
       )}
-
       {article.coverImageBase64 && (
-        <img
-          src={article.coverImageBase64}
-          alt={article.title}
-          className="w-full md:w-1/3 h-48 object-cover"
-          loading="lazy"
-        />
+        <div className="relative w-full h-60 rounded-2xl overflow-hidden">
+          <img
+            src={article.coverImageBase64}
+            alt={article.title}
+            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-fuchsia-100/50"></div>
+        </div>
       )}
 
       <article className="prose prose-gray max-w-none text-gray-800 mb-10">

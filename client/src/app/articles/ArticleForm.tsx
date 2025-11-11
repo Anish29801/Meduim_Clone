@@ -156,7 +156,7 @@ export default function ArticleForm() {
                 placeholder="Title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full mb-5 text-4xl font-serif font-semibold bg-transparent border-b border-gray-300 focus:outline-none focus:border-gray-500 placeholder-gray-400"
+                className="w-full mb-5 text-4xl font-serif font-semibold bg-transparent border-b-2 border-gray-300 text-gray-900 placeholder-black focus:outline-none focus:ring-0 focus:border-gray-300"
               />
 
               {/* Category */}

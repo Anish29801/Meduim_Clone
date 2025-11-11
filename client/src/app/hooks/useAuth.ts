@@ -18,7 +18,6 @@ export const useAuth = (roleRequired?: 'ADMIN' | 'USER') => {
         router.push('/login');
         return;
       }
-      console.log('roleRequired:', roleRequired);
 
       if (roleRequired && role !== roleRequired) {
         router.push('/unauthorized');

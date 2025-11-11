@@ -47,8 +47,13 @@ export default function EditArticlePage({ articleId }: Props) {
     async function fetchArticle() {
       try {
         const data = await callApi(`/api/articles/${articleId}`);
+        let coverImageBase64 = null;
+        if (data.coverImageBytes) {
+          const byteArray = Object.values(data.coverImageBytes) as number[];
+          coverImageBase64 = `data:image/png;base64,${bytesToBase64(byteArray)}`;
+        }
         if (data) {
-          setArticle(data);
+          setArticle({ ...data, coverImageBase64 });
           setTitle(data.title || '');
           setContent(data.content || '');
           setCategoryId(data.categoryId ?? '');
@@ -120,87 +125,152 @@ export default function EditArticlePage({ articleId }: Props) {
     }
   };
 
+  function bytesToBase64(bytes: number[]) {
+    let binary = '';
+    const chunkSize = 0x8000; // 32KB chunks
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.slice(i, i + chunkSize);
+      binary += String.fromCharCode(...chunk);
+    }
+    return btoa(binary);
+  }
+
   if (loading || !article)
     return <p className="text-center mt-10">Loading article...</p>;
 
   // 🔹 JSX
   return (
-    <div className="max-w-3xl mx-auto p-8 bg-white rounded-2xl shadow-xl space-y-6">
-      <h1 className="text-2xl font-bold text-indigo-700">✏️ Edit Article</h1>
+    <div className="flex flex-col h-screen bg-[#fafafa] overflow-y-auto">
+      {/* ===== Header ===== */}
+      <header className="sticky top-0 z-20 px-10 py-4 flex items-center justify-between bg-[#fafafa]">
+        <h1 className="text-2xl font-bold text-indigo-700">✏️ Edit Article</h1>
+        <button
+          onClick={handleUpdate}
+          className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-full transition-all"
+        >
+          Update
+        </button>
+      </header>
 
-      {/* Title */}
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="w-full p-3 border-2 border-gray-300 rounded-xl"
-        placeholder="Enter article title"
-      />
+      <main className="flex flex-1 px-10 py-6 overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10 flex-1 overflow-y-auto">
+          {/* ===== LEFT PANEL (Meta Info) ===== */}
+          <aside className="lg:col-span-1 space-y-6 sticky top-24 self-start bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+            {/* Title */}
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter article title"
+              className="w-full mb-5 text-3xl font-semibold bg-transparent border-b-2 border-gray-300 text-gray-900 placeholder-black focus:outline-none focus:ring-0 focus:border-gray-300 p-3 rounded-xl"
+            />
 
-      {/* Content */}
-      <div className="border-2 border-gray-300 rounded-xl p-2">
-        <LexicalEditor initialContent={content} onChange={setContent} />
-      </div>
+            {/* Category */}
+            <div>
+              <label className="block mb-2 text-gray-900 font-medium">
+                Category
+              </label>
+              <select
+                value={categoryId ?? ''}
+                onChange={(e) => setCategoryId(Number(e.target.value))}
+                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-400 focus:outline-none transition"
+              >
+                <option value="">Select Category</option>
+                {categories?.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-      {/* Category Dropdown */}
-      <select
-        value={categoryId}
-        onChange={(e) => setCategoryId(Number(e.target.value))}
-        className="w-full p-3 border-2 border-gray-300 rounded-xl"
-      >
-        <option value="">Select Category</option>
-        {categories.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.name}
-          </option>
-        ))}
-      </select>
+            {/* Tags */}
+            <div>
+              <label className="block mb-2 text-gray-900 font-medium">
+                Tags
+              </label>
+              <input
+                type="text"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="Enter tags (comma separated)"
+                className="w-full px-4 py-3 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-400 focus:outline-none transition"
+              />
+              {tags && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {tags.split(',').map((tag: string, i: number) => (
+                    <span
+                      key={i}
+                      className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm"
+                    >
+                      #{tag.trim()}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
 
-      {/* Tags Input */}
-      <input
-        type="text"
-        value={tags}
-        onChange={(e) => setTags(e.target.value)}
-        className="w-full p-3 border-2 border-gray-300 rounded-xl"
-        placeholder="Enter tags (comma separated)"
-      />
+            <div className="mt-4">
+              <p className="text-gray-600 text-sm mb-2">Cover Image</p>
 
-      {/* Tag Preview */}
-      {tags && (
-        <div className="flex flex-wrap gap-2">
-          {tags.split(',').map((tag: string, i: number) => (
-            <span
-              key={i}
-              className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm"
-            >
-              #{tag.trim()}
-            </span>
-          ))}
+              {/* Preview Area */}
+              <div className="relative w-full h-40 border rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center">
+                {/* Show selected new file */}
+                {coverImage ? (
+                  <div className="relative w-full h-full">
+                    <img
+                      src={URL.createObjectURL(coverImage)}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setCoverImage(null)}
+                      className="absolute top-2 right-2 bg-gray-800 text-white w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-500 transition"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  // Show previous cover image
+                  article?.coverImageBase64 && (
+                    <img
+                      src={article.coverImageBase64}
+                      alt="Current Cover"
+                      className="w-full h-full object-cover"
+                    />
+                  )
+                )}
+              </div>
+
+              {/* File Input */}
+              <label
+                htmlFor="coverImage"
+                className="mt-3 block w-full text-center px-4 py-3 bg-gray-100 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-200 transition"
+              >
+                {coverImage ? 'Change File' : 'Choose a file'}
+              </label>
+              <input
+                id="coverImage"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </div>
+          </aside>
+
+          {/* ===== RIGHT PANEL (Content Editor) ===== */}
+          <section className="lg:col-span-2 bg-white rounded-xl shadow-md p-6 flex flex-col flex-1 border border-gray-200">
+            <label className="block mb-3 text-gray-800 font-semibold text-lg">
+              Write your story
+            </label>
+            <div className="flex-1 bg-white p-4 overflow-y-auto rounded-md border border-gray-100">
+              <LexicalEditor initialContent={content} onChange={setContent} />
+            </div>
+          </section>
         </div>
-      )}
-
-      {/* Current Image */}
-      {article.coverImageBase64 && (
-        <div className="mt-4">
-          <p className="text-gray-600 text-sm mb-2">Current Cover:</p>
-          <img
-            src={article.coverImageBase64}
-            alt="Cover"
-            className="w-64 h-40 object-cover rounded-xl border"
-          />
-        </div>
-      )}
-
-      {/* Upload New Image */}
-      <input type="file" accept="image/*" onChange={handleImageChange} />
-
-      {/* Update Button */}
-      <button
-        onClick={handleUpdate}
-        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-medium w-full"
-      >
-        Update Article
-      </button>
+      </main>
     </div>
   );
 }

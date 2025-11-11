@@ -13,7 +13,7 @@ interface Post {
   comments: number;
   daysAgo: number;
   description: string;
-  image?: string;
+  coverImageBase64?: string | null;
   content?: string;
   authorId: number;
   tags: { id: number; name: string }[];
@@ -24,6 +24,22 @@ interface Post {
 export default function Dashboard() {
   const { callApi, loading, error } = useApi<Post[]>();
   const [posts, setPosts] = useState<Post[]>([]);
+
+  function bytesToBase64(byteArray: any) {
+    if (!byteArray) return null;
+
+    const uint8Array = new Uint8Array(Object.values(byteArray));
+    let binary = '';
+
+    // process in chunks (for large images)
+    const chunkSize = 0x8000;
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+      const chunk = uint8Array.subarray(i, i + chunkSize);
+      binary += String.fromCharCode.apply(null, chunk as any);
+    }
+
+    return `data:image/png;base64,${btoa(binary)}`;
+  }
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -41,14 +57,15 @@ export default function Dashboard() {
               (1000 * 60 * 60 * 24)
           ),
           description: extractPlainText(a.content).slice(0, 120) + '...',
-          image: a.coverImage,
+          coverImageBase64: a.coverImageBytes
+            ? bytesToBase64(a.coverImageBytes)
+            : null,
           content: extractPlainText(a.content),
           authorId: a.authorId,
           tags: a.tags,
           author: a.author?.username,
           authorAvatar: a.author?.avatar || '/default-avatar.png',
         }));
-
         setPosts(mappedPosts);
       } catch (err) {
         console.error('Failed to fetch posts', err);
@@ -75,6 +92,7 @@ export default function Dashboard() {
       return lexicalJSON.replace(/<[^>]+>/g, '').slice(0, 200);
     }
   }
+
   if (loading) return <div className="p-10 text-center">Loading posts...</div>;
   if (error)
     return <div className="p-10 text-center text-red-500">{error}</div>;
