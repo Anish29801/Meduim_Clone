@@ -103,6 +103,7 @@ export default function SingleArticlePage() {
       setDeleting(false);
     }
   };
+
   function blobToBase64(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
