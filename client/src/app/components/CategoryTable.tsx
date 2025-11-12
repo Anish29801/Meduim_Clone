@@ -1,15 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Category } from '../type';
-
-interface Props {
-  categories: Category[];
-  onUpdate: (id: number, name: string) => void;
-  onDelete: (id: number) => void;
-  page: number;
-  limit: number;
-}
+import { Category, Props } from '../type';
 
 export default function CategoryTable({
   page,

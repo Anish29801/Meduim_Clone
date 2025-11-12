@@ -22,7 +22,13 @@ export default function Sidebar() {
   const { user, isLoggedIn } = useAuth();
 
   const userNavigation = [
-    { name: 'Home', icon: HomeIcon, href: '#', current: true, private: false },
+    {
+      name: 'Home',
+      icon: HomeIcon,
+      href: '/home',
+      current: true,
+      private: false,
+    },
     {
       name: 'Library',
       icon: BookOpenIcon,
