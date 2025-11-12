@@ -1,7 +1,6 @@
 'use client';
 import { useParams } from 'next/navigation';
 import EditArticlePage from '@/app/articles/EditArticlePage';
-import ClientLayout from '@/app/components/layouts/client-layout';
 
 export default function EditPage() {
   const { id } = useParams();

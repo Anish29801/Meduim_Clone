@@ -37,7 +37,8 @@ export default function EditArticlePage({ articleId }: Props) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [tags, setTags] = useState<string>('');
+  const [tags, setTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState('');
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [categoryId, setCategoryId] = useState<number | ''>('');
   const router = useRouter();
@@ -57,9 +58,7 @@ export default function EditArticlePage({ articleId }: Props) {
           setTitle(data.title || '');
           setContent(data.content || '');
           setCategoryId(data.categoryId ?? '');
-          setTags(
-            (data.tags && data.tags.map((t: Tag) => t.name).join(', ')) || ''
-          );
+          setTags(data.tags ? data.tags.map((t: Tag) => t.name) : []);
           toast.success('Article loaded successfully!');
         }
       } catch (err) {
@@ -105,10 +104,7 @@ export default function EditArticlePage({ articleId }: Props) {
       formData.append('content', content);
       formData.append('categoryId', String(categoryId || 1));
       formData.append('authorId', String(article?.authorId || 1));
-      formData.append(
-        'tags',
-        JSON.stringify(tags.split(',').map((t: string) => t.trim()))
-      );
+      formData.append('tags', JSON.stringify(tags));
       if (coverImage) formData.append('coverImage', coverImage);
 
       await callApi(`/api/articles/${articleId}`, {
@@ -117,7 +113,10 @@ export default function EditArticlePage({ articleId }: Props) {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      toast.success('Article updated successfully 🎉');
+      toast.success('Article updated successfully 🎉', {
+        duration: 3000,
+        position: 'top-right',
+      });
       setTimeout(() => router.push('/articles/view'), 400);
     } catch (err) {
       console.error(err);
@@ -125,6 +124,23 @@ export default function EditArticlePage({ articleId }: Props) {
     }
   };
 
+  // Tags
+  const handleAddTag = () => {
+    if (!newTag.trim()) return;
+
+    const newTags = newTag
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t && !tags.includes(t));
+
+    setTags([...tags, ...newTags]);
+    setNewTag('');
+  };
+
+  const handleRemoveTag = (tag: string) =>
+    setTags(tags.filter((t) => t !== tag));
+
+  //image convert chunks
   function bytesToBase64(bytes: number[]) {
     let binary = '';
     const chunkSize = 0x8000; // 32KB chunks
@@ -135,6 +151,12 @@ export default function EditArticlePage({ articleId }: Props) {
     return btoa(binary);
   }
 
+  //back button
+  const goBack = () => {
+    router.back();
+  };
+
+  //tags are arrays
   if (loading || !article)
     return <p className="text-center mt-10">Loading article...</p>;
 
@@ -142,6 +164,13 @@ export default function EditArticlePage({ articleId }: Props) {
   return (
     <div className="flex flex-col h-screen bg-[#fafafa] overflow-y-auto">
       {/* ===== Header ===== */}
+      <button
+        onClick={goBack}
+        className="w-24 px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 transition"
+      >
+        ← Back
+      </button>
+
       <header className="sticky top-0 z-20 px-10 py-4 flex items-center justify-between bg-[#fafafa]">
         <h1 className="text-2xl font-bold text-indigo-700">✏️ Edit Article</h1>
         <button
@@ -157,12 +186,15 @@ export default function EditArticlePage({ articleId }: Props) {
           {/* ===== LEFT PANEL (Meta Info) ===== */}
           <aside className="lg:col-span-1 space-y-6 sticky top-24 self-start bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
             {/* Title */}
+            <label className="block mb-2 text-gray-900 font-medium">
+              Title
+            </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter article title"
-              className="w-full mb-5 text-3xl font-semibold bg-transparent border-b-2 border-gray-300 text-gray-900 placeholder-black focus:outline-none focus:ring-0 focus:border-gray-300 p-3 rounded-xl"
+              className="w-full px-4 py-3 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-400 focus:outline-none transition"
             />
 
             {/* Category */}
@@ -189,25 +221,45 @@ export default function EditArticlePage({ articleId }: Props) {
               <label className="block mb-2 text-gray-900 font-medium">
                 Tags
               </label>
-              <input
-                type="text"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder="Enter tags (comma separated)"
-                className="w-full px-4 py-3 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-400 focus:outline-none transition"
-              />
-              {tags && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {tags.split(',').map((tag: string, i: number) => (
-                    <span
-                      key={i}
-                      className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm"
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  placeholder="Add a tag..."
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddTag();
+                    }
+                  }}
+                  className="flex-1 px-4 py-3 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-400 focus:outline-none transition"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddTag}
+                  className="px-5 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition text-sm"
+                >
+                  Add
+                </button>
+              </div>
+
+              <div className="flex flex-wrap gap-3 mt-2">
+                {tags.map((tag, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm hover:bg-gray-300 transition"
+                  >
+                    <span className="font-medium">#{tag}</span>
+                    <button
+                      onClick={() => handleRemoveTag(tag)}
+                      className="text-gray-500 hover:text-red-500 transition"
                     >
-                      #{tag.trim()}
-                    </span>
-                  ))}
-                </div>
-              )}
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="mt-4">
