@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   createContext,
@@ -6,7 +6,8 @@ import {
   useEffect,
   useState,
   ReactNode,
-} from "react";
+} from 'react';
+import { useRouter } from 'next/navigation';
 
 export type UserType = {
   id?: number;
@@ -32,30 +33,33 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem('user');
     if (storedUser) setUser(JSON.parse(storedUser));
     setLoading(false);
   }, []);
 
   const login = (userData: UserType) => {
     setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-    if (userData.token) localStorage.setItem("token", userData.token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    if (userData.token) localStorage.setItem('token', userData.token);
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    router.push('/');
   };
 
   const updateUser = (updates: Partial<UserType>) => {
     if (!user) return;
     const updatedUser = { ...user, ...updates };
     setUser(updatedUser);
-    localStorage.setItem("user", JSON.stringify(updatedUser));
+    localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
   return (
@@ -76,6 +80,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within AuthProvider");
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };

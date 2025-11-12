@@ -1,15 +1,16 @@
-import { Router } from "express";
-import multer from "multer";
+import { Router } from 'express';
+import multer from 'multer';
 import {
   createArticle,
   getArticles,
   getArticle,
   deleteArticle,
   getArticleCover,
-  updateArticle,getArticleStatus,
+  updateArticleController,
+  getArticleStatus,
   toggleArticleStatus,
   getArticlesByAuthor,
-} from "../controllers/articleController";
+} from '../controllers/articleController';
 
 const router = Router();
 
@@ -21,27 +22,25 @@ const upload = multer({ storage: multer.memoryStorage() });
 // =======================
 
 // ✅ Get all articles
-router.get("/", getArticles);
-router.route("/:id/status")
-  .get(getArticleStatus)
-  .put(toggleArticleStatus);
+router.get('/', getArticles);
+router.route('/:id/status').get(getArticleStatus).put(toggleArticleStatus);
 
 // ✅ Get articles by author (important: must be before `/:id`)
-router.get("/author/:authorId", getArticlesByAuthor);
+router.get('/author/:authorId', getArticlesByAuthor);
 
 // ✅ Get single article by ID
-router.get("/:id", getArticle);
+router.get('/:id', getArticle);
 
 // ✅ Get article cover image
-router.get("/:id/cover", getArticleCover);
+router.get('/:id/cover', getArticleCover);
 
 // ✅ Create article
-router.post("/", upload.single("coverImage"), createArticle);
+router.post('/', upload.single('coverImage'), createArticle);
 
 // ✅ Update article
-router.patch("/:id", upload.single("coverImage"), updateArticle);
+router.patch('/:id', upload.single('coverImage'), updateArticleController);
 
 // ✅ Delete article
-router.delete("/:id", deleteArticle);
+router.delete('/:id', deleteArticle);
 
 export default router;

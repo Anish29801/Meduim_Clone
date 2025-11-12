@@ -15,3 +15,12 @@ export interface PaginatedResult<T> {
   page: number;
   limit: number;
 }
+
+export interface UpdateArticleData {
+  title?: string;
+  content?: string;
+  categoryId?: number;
+  authorId?: number;
+  tags?: string[];
+  coverImageBytes?: Uint8Array; // simpler, no <ArrayBuffer>
+}

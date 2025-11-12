@@ -1,27 +1,34 @@
-"use client";
-import LogoLink from "./LogoLink";
+'use client';
+import LogoLink from './LogoLink';
 
-import { useState, useEffect } from "react";
-import { Disclosure, Dialog, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { useState, useEffect } from 'react';
+import {
+  Disclosure,
+  Dialog,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+} from '@headlessui/react';
 import {
   Bars3Icon,
   BellIcon,
   MagnifyingGlassIcon,
   PencilSquareIcon,
   XMarkIcon,
-} from "@heroicons/react/24/outline";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import Sidebar from "./Sidebar";
-import SignUp from "../signup/page";
-import Login from "../login/page";
-import UpdateUser from "../update/page";
-import male from "@/../public/male.svg";
-import female from "@/../public/female.svg";
-import { useAuth } from "@/app/context/AuthContext";
+} from '@heroicons/react/24/outline';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import Sidebar from './Sidebar';
+import SignUp from '../signup/page';
+import Login from '../login/page';
+import UpdateUser from '../update/page';
+import male from '@/../public/male.svg';
+import female from '@/../public/female.svg';
+import { useAuth } from '@/app/context/AuthContext';
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
+  return classes.filter(Boolean).join(' ');
 }
 
 export default function Navbar() {
@@ -31,7 +38,7 @@ export default function Navbar() {
   const [showSignUp, setShowSignUp] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
 
-  const getAvatarImage = () => (user?.avatar === "female" ? female : male);
+  const getAvatarImage = () => (user?.avatar === 'female' ? female : male);
 
   return (
     <>
@@ -40,8 +47,8 @@ export default function Navbar() {
           <div className="relative flex h-16 items-center justify-between">
             <div className="flex flex-1 items-center justify-start">
               {/* remove admin and user dashboard */}
-              {/* Logo */}
-              {/* <a href="/" className="flex items-center space-x-2">
+              {/* Logo
+              <a href="/" className="flex items-center space-x-2">
                 <span className="font-serif text-xl font-semibold text-gray-900">
                   Tagebuch
                 </span>
@@ -82,14 +89,14 @@ export default function Navbar() {
               ) : (
                 <>
                   <button
-                    onClick={() => router.push("/articles/new")}
+                    onClick={() => router.push('/articles/new')}
                     className="inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100 transition"
                   >
                     <PencilSquareIcon className="h-5 w-5 mr-1" />
                     Write
                   </button>
                   <button
-                    onClick={() => router.push("/articles/view")}
+                    onClick={() => router.push('/articles/view')}
                     className="inline-flex items-center text-sm font-medium text-gray-700 border rounded-full px-3 py-1.5 hover:bg-gray-100 transition"
                   >
                     view
@@ -132,7 +139,11 @@ export default function Navbar() {
       </Disclosure>
 
       {/* LOGIN MODAL */}
-      <Dialog open={showLogin} onClose={() => setShowLogin(false)} className="relative z-50">
+      <Dialog
+        open={showLogin}
+        onClose={() => setShowLogin(false)}
+        className="relative z-50"
+      >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg relative">
@@ -152,7 +163,11 @@ export default function Navbar() {
       </Dialog>
 
       {/* SIGNUP MODAL */}
-      <Dialog open={showSignUp} onClose={() => setShowSignUp(false)} className="relative z-50">
+      <Dialog
+        open={showSignUp}
+        onClose={() => setShowSignUp(false)}
+        className="relative z-50"
+      >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg relative">
@@ -168,7 +183,11 @@ export default function Navbar() {
       </Dialog>
 
       {/* UPDATE PROFILE MODAL */}
-      <Dialog open={showUpdate} onClose={() => setShowUpdate(false)} className="relative z-50">
+      <Dialog
+        open={showUpdate}
+        onClose={() => setShowUpdate(false)}
+        className="relative z-50"
+      >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg relative">

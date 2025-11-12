@@ -1,5 +1,6 @@
 //src/Services/articleService.ts
 import prisma from '../prisma';
+import { UpdateArticleData } from '../types/types';
 
 // ✅ Type for creating a new article
 export interface CreateArticleData {
@@ -65,11 +66,11 @@ export const updateArticleStatusService = async (
   const updated = await prisma.article.update({
     where: { id },
     data: { status },
-    include:{
+    include: {
       author: { select: { id: true, username: true } },
       category: { select: { id: true, name: true } },
-      tags:true,
-    }
+      tags: true,
+    },
   });
 
   return updated;
@@ -90,3 +91,39 @@ export const getArticleStatusService = async (id: number) => {
   return article;
 };
 
+//update article
+export const updateArticleService = async (
+  id: number,
+  data: UpdateArticleData
+) => {
+  const { tags, coverImageBytes, ...rest } = data;
+
+  // Prepare update data
+  const updateData: any = { ...rest };
+
+  if (coverImageBytes) {
+    // Convert Uint8Array to Buffer for Prisma
+    updateData.coverImageBytes = Buffer.from(coverImageBytes);
+  }
+
+  if (tags) {
+    // Replace tags completely
+    updateData.tags = {
+      deleteMany: {}, // remove existing tags
+      create: tags.map((name: any) => ({ name })),
+    };
+  }
+
+  // Update article in DB
+  const updatedArticle = await prisma.article.update({
+    where: { id },
+    data: updateData,
+    include: {
+      tags: true,
+      category: true,
+      author: true,
+    },
+  });
+
+  return updatedArticle;
+};

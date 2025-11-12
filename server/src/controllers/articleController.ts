@@ -2,12 +2,13 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma';
 import {
-   createArticleService, getArticleStatusService,
+  createArticleService,
+  getArticleStatusService,
+  updateArticleService,
   updateArticleStatusService,
 } from '../services/articleService';
 
 import { Bytes } from '@prisma/client/runtime/library';
-
 
 // multer middleware ke sath
 export const createArticle = async (req: Request, res: Response) => {
@@ -43,7 +44,7 @@ export const getArticlesByAuthor = async (req: Request, res: Response) => {
   try {
     const authorId = Number(req.params.authorId);
     if (isNaN(authorId)) {
-      return res.status(400).json({ error: "Invalid author ID" });
+      return res.status(400).json({ error: 'Invalid author ID' });
     }
 
     const articles = await prisma.article.findMany({
@@ -57,14 +58,14 @@ export const getArticlesByAuthor = async (req: Request, res: Response) => {
     const formatted = articles.map((a) => ({
       ...a,
       coverImageBase64: a.coverImageBytes
-        ? `data:image/png;base64,${Buffer.from(a.coverImageBytes).toString("base64")}`
+        ? `data:image/png;base64,${Buffer.from(a.coverImageBytes).toString('base64')}`
         : null,
     }));
 
     res.json(formatted);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch author articles" });
+    res.status(500).json({ error: 'Failed to fetch author articles' });
   }
 };
 
@@ -112,7 +113,6 @@ export const toggleArticleStatus = async (req: Request, res: Response) => {
       data: { status },
     });
 
-
     res.json({
       message: `Article status updated to ${status}`,
       article: updatedArticle,
@@ -159,44 +159,28 @@ export const getArticleCover = async (req: Request, res: Response) => {
 };
 
 // Update Article
-export const updateArticle = async (req: Request, res: Response) => {
+export const updateArticleController = async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const { title, content, categoryId, authorId, tags } = req.body;
-    const tagList: string[] = tags ? JSON.parse(tags) : [];
 
-    let coverImageBase64: string | undefined;
-    if (req.file) {
-      coverImageBase64 = `data:${
-        req.file.mimetype
-      };base64,${req.file.buffer.toString('base64')}`;
-    }
+    // Handle optional file upload
+    const coverImageBytes: Uint8Array | undefined = req.file
+      ? new Uint8Array(req.file.buffer)
+      : undefined;
 
-    const updatedArticle = await prisma.article.update({
-      where: { id },
-      data: {
-        title,
-        content,
-        categoryId: Number(categoryId),
-        authorId: Number(authorId),
-        ...(coverImageBase64 && { coverImageBase64 }),
-        tags: {
-          deleteMany: {},
-          create: tagList.map((name) => ({
-            name,
-          })),
-        },
-      },
-      include: {
-        tags: true,
-        category: true,
-        author: true,
-      },
+    const updatedArticle = await updateArticleService(id, {
+      title,
+      content,
+      categoryId: categoryId ? Number(categoryId) : undefined,
+      authorId: authorId ? Number(authorId) : undefined,
+      tags: tags ? JSON.parse(tags) : undefined, // optional
+      coverImageBytes, // optional
     });
 
     res.json(updatedArticle);
-  } catch (error: any) {
-    console.error('Update error:', error);
+  } catch (err: any) {
+    console.error('Update error:', err);
     res.status(500).json({ error: 'Failed to update article' });
   }
 };
@@ -219,15 +203,12 @@ export const getArticleStatus = async (req: Request, res: Response) => {
 
     const article = await getArticleStatusService(id);
     if (!article) {
-      return res.status(404).json({ error: "Article not found" });
+      return res.status(404).json({ error: 'Article not found' });
     }
 
     res.json(article);
   } catch (error) {
-    console.error("Error fetching article:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error('Error fetching article:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
-
-
-
