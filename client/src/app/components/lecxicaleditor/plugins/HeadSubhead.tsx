@@ -9,6 +9,7 @@ import {
 import { $setBlocksType } from '@lexical/selection';
 import { $createHeadingNode, HeadingNode } from '@lexical/rich-text';
 import { $isHeadingNode } from '@lexical/rich-text';
+import { $isRootOrShadowRoot } from 'lexical';
 
 type Props = {
   setRawJson?: (value: string) => string;
@@ -25,6 +26,7 @@ export function HeadSubButton({ setRawJson }: Props) {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
           const anchorNode = selection.anchor.getNode();
+          if ($isRootOrShadowRoot(anchorNode)) return;
           const element = anchorNode.getTopLevelElementOrThrow();
           const type = element.getType();
 
