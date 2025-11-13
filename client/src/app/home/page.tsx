@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import HeadingSearch from '@/app/components/headingSection';
 import CategoryTagSidebar from '@/app/components/CategoryTagSidebar';
-import ArticleCardsGrid from '@/app/components/ArticleCardsGrid';
+import ArticleCardsGrid from './ArticleCardsGrid';
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
