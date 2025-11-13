@@ -36,8 +36,8 @@ const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
           callApi('/api/tags', { method: 'GET' }),
         ]);
 
-        console.log('Categories Response:', catResponse);
-        console.log('Tags Response:', tagResponse);
+        // console.log('Categories Response:', catResponse);
+        // console.log('Tags Response:', tagResponse);
 
         // Extract and normalize data safely
         const categoryList: Category[] = Array.isArray(catResponse?.data)

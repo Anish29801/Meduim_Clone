@@ -39,7 +39,7 @@ const HeadingSearch: React.FC<headingSearchProps> = ({
             type="search"
             value={q}
             onChange={handleChange}
-            placeholder="Search articles..."
+            placeholder={placeHolder}
             className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>

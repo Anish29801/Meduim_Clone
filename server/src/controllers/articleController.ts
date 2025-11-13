@@ -70,8 +70,11 @@ export const getArticlesByAuthor = async (req: Request, res: Response) => {
 };
 
 // GET all articles
-export const getArticles = async (_req: Request, res: Response) => {
+export const getArticles = async (req: Request, res: Response) => {
   try {
+    const search = req.query.title?.toString().toLowerCase() || '';
+
+    // 1️⃣ पहले सारे articles fetch करो
     const articles = await prisma.article.findMany({
       include: {
         author: true,
@@ -80,8 +83,18 @@ export const getArticles = async (_req: Request, res: Response) => {
       },
     });
 
-    // Convert cover bytes → base64
-    const formatted = articles.map((a) => ({
+    // 2️⃣ अब JS में search filter करो (case-insensitive)
+    const filtered = search
+      ? articles.filter(
+          (a) =>
+            a.title.toLowerCase().includes(search) ||
+            a.content.toLowerCase().includes(search) ||
+            a.tags.some((t) => t.name.toLowerCase().includes(search))
+        )
+      : articles;
+
+    // 3️⃣ Image bytes को Base64 में convert करो
+    const formatted = filtered.map((a) => ({
       ...a,
       coverImageBase64: a.coverImageBytes
         ? `data:image/png;base64,${Buffer.from(a.coverImageBytes).toString(

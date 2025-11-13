@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Article, Post } from '@/app/type';
 import { useApi } from '@/app/hooks/useApi';
 
@@ -17,19 +17,18 @@ const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({
   query = '',
 }) => {
   const { data, loading, error, callApi } = useApi<Resource[]>();
-
   useEffect(() => {
-    let endpoint = `/api/${type}`;
+    let endpoint = '/api/articles';
     if (query?.trim()) {
       endpoint += `?title=${encodeURIComponent(query.trim())}`;
     }
     callApi(endpoint, { method: 'GET' });
-  }, [callApi, type, query]);
+  }, [query, callApi]);
 
-  if (loading) return <p className="text-center mt-10">Loading {type}...</p>;
+  if (loading) return <p className="text-center mt-10">Loading articles...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
   if (!data || data.length === 0)
-    return <p className="text-center mt-10">No {type} found.</p>;
+    return <p className="text-center mt-10">No articles found.</p>;
 
   return (
     <section className="grid grid-cols-1 w-full sm:grid-cols-2 lg:grid-cols-3 gap-6 flex-1">
