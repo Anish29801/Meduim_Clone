@@ -4,18 +4,14 @@ import React, { useEffect, useMemo } from 'react';
 import { Article, Post } from '@/app/type';
 import { useApi } from '@/app/hooks/useApi';
 
-type ResourceType = 'articles' | 'posts';
 type Resource = Article | Post;
 
 interface ArticleCardsGridProps {
-  type?: ResourceType;
+  type?: Resource;
   query?: string;
 }
 
-const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({
-  type = 'articles',
-  query = '',
-}) => {
+const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({ query = '' }) => {
   const { data, loading, error, callApi } = useApi<Resource[]>();
   useEffect(() => {
     let endpoint = '/api/articles';
@@ -37,10 +33,9 @@ const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({
           key={item.id}
           className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all bg-white"
         >
-          {/* Conditional Image Handling */}
           {'coverImageBase64' in item && item.coverImageBase64 ? (
             <img
-              src={`data:image/jpeg;base64,${item.coverImageBase64}`}
+              src={item.coverImageBase64}
               alt={item.title}
               className="w-full h-40 object-cover"
             />
@@ -59,9 +54,10 @@ const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({
 
             {/* Description */}
             {'content' in item ? (
-              <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                {item.content.slice(0, 100)}...
-              </p>
+              <p
+                className="text-sm text-gray-500 mt-1 line-clamp-2"
+                dangerouslySetInnerHTML={{ __html: item.content }}
+              />
             ) : (
               <p className="text-sm text-gray-500 mt-1 line-clamp-2">
                 {item.description}
@@ -84,19 +80,22 @@ const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({
 
             {/* Author + Date */}
             <div className="flex items-center justify-between text-sm text-gray-500 mt-3">
-              {'author' in item ? (
-                typeof item.author === 'object' ? (
-                  <span>{item.author.name}</span>
-                ) : (
-                  <span>{item.author}</span>
-                )
-              ) : null}
-
+              {typeof item.author === 'object' && item.author ? (
+                <span>
+                  {'fullName' in item.author
+                    ? item.author.fullName
+                    : 'username' in item.author
+                      ? item.author.username
+                      : 'Unknown Author'}
+                </span>
+              ) : (
+                <span>Unknown Author</span>
+              )}
               {'createdAt' in item && item.createdAt ? (
                 <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-              ) : 'daysAgo' in item ? (
-                <span>{item.daysAgo} days ago</span>
-              ) : null}
+              ) : (
+                <span>—</span>
+              )}
             </div>
 
             {/* Views & Comments */}

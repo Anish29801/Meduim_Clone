@@ -58,7 +58,11 @@ export interface Post {
 export interface Article {
   id: number;
   title: string;
-  author: { id: number; name: string };
+  author: {
+    id: number;
+    username?: string;
+    fullName?: string;
+  };
   authorId: number;
   coverImageBase64?: string | null;
   categoryId: number;

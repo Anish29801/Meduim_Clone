@@ -74,7 +74,7 @@ export const getArticles = async (req: Request, res: Response) => {
   try {
     const search = req.query.title?.toString().toLowerCase() || '';
 
-    // 1️⃣ पहले सारे articles fetch करो
+    // पहले सारे articles fetch करो
     const articles = await prisma.article.findMany({
       include: {
         author: true,
@@ -83,7 +83,7 @@ export const getArticles = async (req: Request, res: Response) => {
       },
     });
 
-    // 2️⃣ अब JS में search filter करो (case-insensitive)
+    //अब JS में search filter करो (case-insensitive)
     const filtered = search
       ? articles.filter(
           (a) =>
@@ -93,7 +93,7 @@ export const getArticles = async (req: Request, res: Response) => {
         )
       : articles;
 
-    // 3️⃣ Image bytes को Base64 में convert करो
+    // Image bytes को Base64 में convert करो
     const formatted = filtered.map((a) => ({
       ...a,
       coverImageBase64: a.coverImageBytes
