@@ -39,7 +39,7 @@ const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
         console.log('Categories Response:', catResponse);
         console.log('Tags Response:', tagResponse);
 
-        // ✅ Extract and normalize data safely
+        // Extract and normalize data safely
         const categoryList: Category[] = Array.isArray(catResponse?.data)
           ? catResponse.data
           : [];
@@ -62,16 +62,16 @@ const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
     fetchData();
   }, [callApi]);
 
-  if (loading)
-    return (
-      <aside className="w-full sm:w-1/4 border border-gray-200 rounded-lg p-4 flex items-center justify-center text-gray-500">
-        <Loader2 className="animate-spin mr-2" size={18} />
-        Loading...
-      </aside>
-    );
+  // if (loading)
+  //   return (
+  //     <aside className="w-full sm:w-1/4 border border-gray-200 rounded-lg p-4 flex items-center justify-center text-gray-500">
+  //       <Loader2 className="animate-spin mr-2" size={18} />
+  //       Loading...
+  //     </aside>
+  //   );
 
   return (
-    <aside className="w-full sm:w-1/4 border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+    <aside className="w-full sm:w-1.5xl  border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
       {/* Categories Section */}
       <div className="mb-6">
         <h3 className="font-semibold text-lg mb-3 text-gray-800">Categories</h3>
