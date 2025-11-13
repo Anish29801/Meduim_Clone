@@ -60,7 +60,6 @@ export interface Article {
   title: string;
   author: { id: number; name: string };
   authorId: number;
-  // coverImage?: string;
   coverImageBase64?: string | null;
   categoryId: number;
   tags?: { id: number; name: string }[];
@@ -81,6 +80,22 @@ export interface Category {
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;
+  page: number;
+  limit: number;
+}
+
+export interface headingSearchProps {
+  heading?: string;
+  subHeading?: string;
+  placeHolder?: string;
+  onSearch?: (query: string) => void;
+  className?: string;
+}
+
+export interface Props {
+  categories: Category[];
+  onUpdate: (id: number, name: string) => void;
+  onDelete: (id: number) => void;
   page: number;
   limit: number;
 }
