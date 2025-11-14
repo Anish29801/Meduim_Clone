@@ -71,14 +71,25 @@ const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
   //   );
 
   return (
-    <aside className="w-full sm:w-1.5xl  border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+    <aside className="w-full sm:w-64 border border-gray-200 rounded-lg p-4 bg-white shadow-sm h-[500px] flex flex-col">
       {/* Categories Section */}
-      <div className="mb-6">
+      <div className="mb-4 flex-1 overflow-y-auto">
         <h3 className="font-semibold text-lg mb-3 text-gray-800">Categories</h3>
         {categories.length === 0 ? (
           <p className="text-sm text-gray-500">No categories found.</p>
         ) : (
           <ul className="space-y-2">
+            {/* "All" option */}
+            <li key="all">
+              <button
+                onClick={() => onSelectCategory('All')}
+                className="w-full text-left px-3 py-2 rounded-md hover:bg-blue-50 hover:text-blue-600 transition font-semibold"
+              >
+                All
+              </button>
+            </li>
+
+            {/* Actual categories */}
             {categories.map((cat) => (
               <li key={cat.id}>
                 <button
@@ -94,7 +105,7 @@ const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
       </div>
 
       {/* Tags Section */}
-      <div>
+      <div className="flex-1 overflow-y-auto">
         <h3 className="font-semibold text-lg mb-3 text-gray-800">Tags</h3>
         {tags.length === 0 ? (
           <p className="text-sm text-gray-500">No tags available.</p>
