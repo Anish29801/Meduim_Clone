@@ -74,8 +74,15 @@ export const getArticles = async (req: Request, res: Response) => {
   try {
     const search = req.query.title?.toString().toLowerCase() || '';
 
-    // पहले सारे articles fetch करो
+    // if(req.query?.search){
+
+    // }
+    // let whereQuery  =
+    // articles fetch
     const articles = await prisma.article.findMany({
+      // where:{
+      //   title:
+      // },
       include: {
         author: true,
         category: true,
@@ -83,7 +90,7 @@ export const getArticles = async (req: Request, res: Response) => {
       },
     });
 
-    //अब JS में search filter करो (case-insensitive)
+    //JS search filter(case-insensitive)
     const filtered = search
       ? articles.filter(
           (a) =>
@@ -201,8 +208,27 @@ export const updateArticleController = async (req: Request, res: Response) => {
 // DELETE article
 export const deleteArticle = async (req: Request, res: Response) => {
   try {
-    const id = Number(req.params.id);
-    await prisma.article.delete({ where: { id } });
+    const articleId = Number(req.params.id);
+
+    await prisma.$transaction(async (prisma) => {
+      await prisma.tag.deleteMany({
+        where: {
+          articles: {
+            some: { id: articleId },
+          },
+          AND: {
+            articles: {
+              none: { id: { not: articleId } },
+            },
+          },
+        },
+      });
+
+      // Delete the article itself
+      await prisma.article.delete({
+        where: { id: articleId },
+      });
+    });
     res.sendStatus(204);
   } catch (err) {
     console.error(err);

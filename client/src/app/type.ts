@@ -45,7 +45,9 @@ export interface LexicalEditorProps {
 export interface Post {
   id: number;
   title: string;
-  author: string;
+  author: {
+    name: string;
+  };
   authorAvatar: string;
   publication: string;
   image: string;
@@ -53,6 +55,10 @@ export interface Post {
   comments: number;
   daysAgo: number;
   description: string;
+  category?: {
+    id: number;
+    name: string;
+  };
 }
 
 export interface Article {
@@ -73,6 +79,7 @@ export interface Article {
   tags?: { id: number; name: string }[];
   content: string;
   createdAt?: string;
+  description?: string;
 }
 
 export interface PostPageProps {
