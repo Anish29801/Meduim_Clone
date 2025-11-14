@@ -1,42 +1,41 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Article, Post } from '@/app/type';
 import { useApi } from '@/app/hooks/useApi';
 
-type ResourceType = 'articles' | 'posts';
 type Resource = Article | Post;
 
 interface ArticleCardsGridProps {
-  type?: ResourceType;
+  type?: Resource;
+  query?: string;
 }
 
-const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({
-  type = 'articles',
-}) => {
+const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({ query = '' }) => {
   const { data, loading, error, callApi } = useApi<Resource[]>();
-
-  //Fetch data dynamically based on prop
   useEffect(() => {
-    callApi(`/api/${type}`, { method: 'GET' });
-  }, [callApi, type]);
+    let endpoint = '/api/articles';
+    if (query?.trim()) {
+      endpoint += `?title=${encodeURIComponent(query.trim())}`;
+    }
+    callApi(endpoint, { method: 'GET' });
+  }, [query, callApi]);
 
-  if (loading) return <p className="text-center mt-10">Loading {type}...</p>;
+  if (loading) return <p className="text-center mt-10">Loading articles...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
   if (!data || data.length === 0)
-    return <p className="text-center mt-10">No {type} found.</p>;
+    return <p className="text-center mt-10">No articles found.</p>;
 
   return (
-    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 flex-1">
+    <section className="grid grid-cols-1 w-full sm:grid-cols-2 lg:grid-cols-3 gap-6 flex-1">
       {data.map((item) => (
         <div
           key={item.id}
           className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all bg-white"
         >
-          {/* ✅ Conditional Image Handling */}
           {'coverImageBase64' in item && item.coverImageBase64 ? (
             <img
-              src={`data:image/jpeg;base64,${item.coverImageBase64}`}
+              src={item.coverImageBase64}
               alt={item.title}
               className="w-full h-40 object-cover"
             />
@@ -48,22 +47,24 @@ const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({
             />
           ) : null}
 
+          {/* Content Section */}
           <div className="p-4">
-            {/* ✅ Title */}
+            {/* Title */}
             <h3 className="text-lg font-semibold mt-2">{item.title}</h3>
 
-            {/* ✅ Description or Content */}
+            {/* Description */}
             {'content' in item ? (
-              <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                {item.content.slice(0, 100)}...
-              </p>
+              <p
+                className="text-sm text-gray-500 mt-1 line-clamp-2"
+                dangerouslySetInnerHTML={{ __html: item.content }}
+              />
             ) : (
               <p className="text-sm text-gray-500 mt-1 line-clamp-2">
                 {item.description}
               </p>
             )}
 
-            {/* ✅ Article Tags */}
+            {/* Tags */}
             {'tags' in item && item.tags && item.tags.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-3">
                 {item.tags.slice(0, 3).map((tag) => (
@@ -77,24 +78,27 @@ const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({
               </div>
             )}
 
-            {/* ✅ Footer (author, date, views) */}
+            {/* Author + Date */}
             <div className="flex items-center justify-between text-sm text-gray-500 mt-3">
-              {'author' in item ? (
-                typeof item.author === 'object' ? (
-                  <span>{item.author.name}</span>
-                ) : (
-                  <span>{item.author}</span>
-                )
-              ) : null}
-
+              {typeof item.author === 'object' && item.author ? (
+                <span>
+                  {'fullName' in item.author
+                    ? item.author.fullName
+                    : 'username' in item.author
+                      ? item.author.username
+                      : 'Unknown Author'}
+                </span>
+              ) : (
+                <span>Unknown Author</span>
+              )}
               {'createdAt' in item && item.createdAt ? (
                 <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-              ) : 'daysAgo' in item ? (
-                <span>{item.daysAgo} days ago</span>
-              ) : null}
+              ) : (
+                <span>—</span>
+              )}
             </div>
 
-            {/* ✅ Optional post metrics */}
+            {/* Views & Comments */}
             {'views' in item && (
               <div className="flex gap-3 text-xs text-gray-400 mt-2">
                 <span>👁 {item.views}</span>
