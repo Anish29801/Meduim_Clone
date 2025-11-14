@@ -63,6 +63,10 @@ export interface Article {
     username?: string;
     fullName?: string;
   };
+  category?: {
+    id: number;
+    name: string;
+  };
   authorId: number;
   coverImageBase64?: string | null;
   categoryId: number;

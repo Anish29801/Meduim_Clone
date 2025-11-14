@@ -27,26 +27,27 @@ const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({ query = '' }) => {
     return <p className="text-center mt-10">No articles found.</p>;
 
   return (
-    <section className="grid grid-cols-1 w-full sm:grid-cols-2 lg:grid-cols-3 gap-6 flex-1">
+    <section className="-translate-x-[120px] grid grid-cols-1 w-full sm:grid-cols-2 lg:grid-cols-2 gap-6 flex-1 transition-transform duration-300 ">
       {data.map((item) => (
         <div
           key={item.id}
-          className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all bg-white"
+          className="border border-gray-300 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all bg-white pt-5 rounded- hover:rounded-xl hover:border-black h-110"
         >
-          {'coverImageBase64' in item && item.coverImageBase64 ? (
-            <img
-              src={item.coverImageBase64}
-              alt={item.title}
-              className="w-full h-40 object-cover"
-            />
-          ) : 'image' in item && item.image ? (
-            <img
-              src={item.image}
-              alt={item.title}
-              className="w-full h-40 object-cover"
-            />
-          ) : null}
-
+          <div className="relative w-full h-40 rounded-xl overflow-hidden">
+            {'coverImageBase64' in item && item.coverImageBase64 ? (
+              <img
+                src={item.coverImageBase64}
+                alt={item.title}
+                className="w-full h-40 object-cover pt-3"
+              />
+            ) : 'image' in item && item.image ? (
+              <img
+                src={item.image}
+                alt={item.title}
+                className="w-full h-40 object-cover pt-3"
+              />
+            ) : null}
+          </div>
           {/* Content Section */}
           <div className="p-4">
             {/* Title */}
