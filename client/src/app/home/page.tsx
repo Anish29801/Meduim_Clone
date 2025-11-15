@@ -35,7 +35,7 @@ export default function HomePage() {
               className="w-full lg:w-1/4 flex-shrink-0"
               variants={fadeUp}
             >
-              <CategoryTagSidebar />
+              <CategoryTagSidebar categories={[]} />
             </motion.div>
 
             {/* Articles Grid */}

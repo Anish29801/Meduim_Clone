@@ -27,26 +27,30 @@ const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({ query = '' }) => {
     return <p className="text-center mt-10">No articles found.</p>;
 
   return (
-    <section className="grid grid-cols-1 w-full sm:grid-cols-2 lg:grid-cols-3 gap-6 flex-1">
+    <section className="-translate-x-[120px] grid grid-cols-1 w-full sm:grid-cols-2 lg:grid-cols-2 gap-6 flex-1 transition-transform duration-300 ">
       {data.map((item) => (
         <div
           key={item.id}
-          className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all bg-white"
+          className="border border-gray-300 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all bg-white pt-3 rounded- hover:rounded-xl hover:border-black h-110"
         >
-          {'coverImageBase64' in item && item.coverImageBase64 ? (
-            <img
-              src={item.coverImageBase64}
-              alt={item.title}
-              className="w-full h-40 object-cover"
-            />
-          ) : 'image' in item && item.image ? (
-            <img
-              src={item.image}
-              alt={item.title}
-              className="w-full h-40 object-cover"
-            />
-          ) : null}
-
+          <div className="relative w-full h-40 rounded-xl overflow-hidden">
+            <span className="absolute top-2 right-2 bg-black/80 text-white text-sm px-2 py-1 mt-4 rounded-2xl">
+              {item?.category?.name}
+            </span>
+            {'coverImageBase64' in item && item.coverImageBase64 ? (
+              <img
+                src={item.coverImageBase64}
+                alt={item.title}
+                className="w-full h-40 object-cover pt-3"
+              />
+            ) : 'image' in item && item.image ? (
+              <img
+                src={item.image}
+                alt={item.title}
+                className="w-full h-40 object-cover pt-3"
+              />
+            ) : null}
+          </div>
           {/* Content Section */}
           <div className="p-4">
             {/* Title */}
@@ -79,7 +83,7 @@ const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({ query = '' }) => {
             )}
 
             {/* Author + Date */}
-            <div className="flex items-center justify-between text-sm text-gray-500 mt-3">
+            <div className="flex flex-col text-sm text-gray-500 mt-3 border-y border-gray-200 rounded-lg p-2">
               {typeof item.author === 'object' && item.author ? (
                 <span>
                   {'fullName' in item.author
@@ -100,8 +104,9 @@ const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({ query = '' }) => {
 
             {/* Views & Comments */}
             {'views' in item && (
-              <div className="flex gap-3 text-xs text-gray-400 mt-2">
+              <div className="flex justify-between gap-3 text-xs text-gray-400 mt-2">
                 <span>👁 {item.views}</span>
+                <span>❤️ 12</span>
                 <span>💬 {item.comments}</span>
               </div>
             )}

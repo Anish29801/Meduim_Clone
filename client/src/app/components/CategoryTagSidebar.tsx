@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { useApi } from '@/app/hooks/useApi';
-import { Loader2 } from 'lucide-react';
 
 interface CategoryTagSidebarProps {
   onSelectCategory?: (category: string) => void;
+  categories: Category[];
 }
 
 interface Category {
@@ -24,6 +24,13 @@ const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showMore, setShowMore] = useState<boolean>(false);
+
+  const VISIBLE_COUNT = 5;
+
+  const visibleCategories = showMore
+    ? categories
+    : categories.slice(0, VISIBLE_COUNT);
 
   const { callApi } = useApi<any>();
 
@@ -36,10 +43,6 @@ const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
           callApi('/api/tags', { method: 'GET' }),
         ]);
 
-        // console.log('Categories Response:', catResponse);
-        // console.log('Tags Response:', tagResponse);
-
-        // Extract and normalize data safely
         const categoryList: Category[] = Array.isArray(catResponse?.data)
           ? catResponse.data
           : [];
@@ -62,24 +65,16 @@ const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
     fetchData();
   }, [callApi]);
 
-  // if (loading)
-  //   return (
-  //     <aside className="w-full sm:w-1/4 border border-gray-200 rounded-lg p-4 flex items-center justify-center text-gray-500">
-  //       <Loader2 className="animate-spin mr-2" size={18} />
-  //       Loading...
-  //     </aside>
-  //   );
-
   return (
-    <aside className="w-full sm:w-64 border border-gray-200 rounded-lg p-4 bg-white shadow-sm h-[500px] flex flex-col">
+    <aside className="w-full sm:w-64 border border-gray-200 rounded-lg p-4 bg-white shadow-sm flex flex-col overflow-visible -translate-x-22">
       {/* Categories Section */}
-      <div className="mb-4 flex-1 overflow-y-auto">
+      <div className="mb-4 flex-1 overflow-visible">
         <h3 className="font-semibold text-lg mb-3 text-gray-800">Categories</h3>
         {categories.length === 0 ? (
           <p className="text-sm text-gray-500">No categories found.</p>
         ) : (
           <ul className="space-y-2">
-            {/* "All" option */}
+            {/* All option */}
             <li key="all">
               <button
                 onClick={() => onSelectCategory('All')}
@@ -90,7 +85,7 @@ const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
             </li>
 
             {/* Actual categories */}
-            {categories.map((cat) => (
+            {visibleCategories.map((cat) => (
               <li key={cat.id}>
                 <button
                   onClick={() => onSelectCategory(cat.name)}
@@ -100,12 +95,24 @@ const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
                 </button>
               </li>
             ))}
+
+            {/* More / Show Less Button */}
+            {categories.length > VISIBLE_COUNT && (
+              <li>
+                <button
+                  onClick={() => setShowMore((prev) => !prev)}
+                  className="w-full text-left px-3 py-2 rounded-md text-blue-600 hover:bg-blue-50 transition font-medium"
+                >
+                  {showMore ? 'Show Less' : 'More...'}
+                </button>
+              </li>
+            )}
           </ul>
         )}
       </div>
 
       {/* Tags Section */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-visible">
         <h3 className="font-semibold text-lg mb-3 text-gray-800">Tags</h3>
         {tags.length === 0 ? (
           <p className="text-sm text-gray-500">No tags available.</p>
