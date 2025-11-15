@@ -15,6 +15,19 @@ export default function HomePage() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
+  const handleSelectCategory = async (categoryId: number | 'All') => {
+    if (categoryId === 'All') {
+      setSearchQuery('');
+      return;
+    }
+
+    setSearchQuery(`category:${categoryId}`);
+  };
+
+  const handleSelectTag = async (tagId: number) => {
+    setSearchQuery(`tag:${tagId}`);
+  };
+
   return (
     <ClientLayout>
       <motion.main
@@ -35,7 +48,10 @@ export default function HomePage() {
               className="w-full lg:w-1/4 flex-shrink-0"
               variants={fadeUp}
             >
-              <CategoryTagSidebar categories={[]} />
+              <CategoryTagSidebar
+                onSelectCategory={handleSelectCategory}
+                onSelectTag={handleSelectTag}
+              />
             </motion.div>
 
             {/* Articles Grid */}

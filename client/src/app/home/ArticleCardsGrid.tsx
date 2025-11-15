@@ -15,9 +15,17 @@ const ArticleCardsGrid: React.FC<ArticleCardsGridProps> = ({ query = '' }) => {
   const { data, loading, error, callApi } = useApi<Resource[]>();
   useEffect(() => {
     let endpoint = '/api/articles';
-    if (query?.trim()) {
+
+    if (query?.startsWith('category:')) {
+      const categoryId = query.split(':')[1];
+      endpoint = `/api/articles/category/${categoryId}`;
+    } else if (query?.startsWith('tag:')) {
+      const tagId = query.split(':')[1];
+      endpoint = `/api/articles/tag/${tagId}`;
+    } else if (query?.trim()) {
       endpoint += `?title=${encodeURIComponent(query.trim())}`;
     }
+
     callApi(endpoint, { method: 'GET' });
   }, [query, callApi]);
 

@@ -4,8 +4,8 @@ import * as categoryService from '../services/categoryService';
 //get categories
 export const getCategories = async (req: Request, res: Response) => {
   try {
-    const page = parseInt((req.query.page as string) || '1', 10);
-    const limit = parseInt((req.query.limit as string) || '35', 35);
+    const page = parseInt(req.query.page as string, 10) || undefined;
+    const limit = parseInt(req.query.limit as string, 10) || undefined;
 
     const result = await categoryService.getAllCategories(page, limit);
     res.json(result);

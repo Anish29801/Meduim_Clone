@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useApi } from '@/app/hooks/useApi';
 
 interface CategoryTagSidebarProps {
-  onSelectCategory?: (category: string) => void;
-  categories: Category[];
+  onSelectCategory?: (categoryId: number | 'All') => void;
+  onSelectTag?: (tagId: number) => void;
 }
 
 interface Category {
@@ -20,6 +20,7 @@ interface Tag {
 
 const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
   onSelectCategory = () => {},
+  onSelectTag = () => {},
 }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -42,10 +43,14 @@ const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
           callApi('/api/categories', { method: 'GET' }),
           callApi('/api/tags', { method: 'GET' }),
         ]);
+        console.log('CATEGORY API RAW:', catResponse);
+        console.log('TAG API RAW:', tagResponse);
 
-        const categoryList: Category[] = Array.isArray(catResponse?.data)
-          ? catResponse.data
-          : [];
+        const categoryList: Category[] = Array.isArray(catResponse)
+          ? catResponse
+          : Array.isArray(catResponse?.data)
+            ? catResponse.data
+            : [];
 
         const tagList: Tag[] = Array.isArray(tagResponse)
           ? tagResponse
@@ -88,7 +93,7 @@ const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
             {visibleCategories.map((cat) => (
               <li key={cat.id}>
                 <button
-                  onClick={() => onSelectCategory(cat.name)}
+                  onClick={() => onSelectCategory(cat.id)}
                   className="w-full text-left px-3 py-2 rounded-md hover:bg-blue-50 hover:text-blue-600 transition"
                 >
                   {cat.name}
@@ -121,7 +126,9 @@ const CategoryTagSidebar: React.FC<CategoryTagSidebarProps> = ({
             {tags.map((tag) => (
               <span
                 key={tag.id}
-                className="px-3 py-1 text-sm border rounded-full bg-gray-50 text-gray-700 hover:bg-blue-100 hover:text-blue-600 cursor-pointer transition"
+                onClick={() => onSelectTag(tag.id)}
+                className="px-3 py-1 text-sm border rounded-full bg-gray-50 text-gray-700 
+             hover:bg-blue-100 hover:text-blue-600 cursor-pointer transition"
               >
                 {tag.name}
               </span>
