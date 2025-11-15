@@ -13,7 +13,10 @@ app.use(applyCors);
 // Increase JSON payload limit (still needed for text fields)
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ limit: '2mb', extended: true }));
-
+app.use((req, res, next) => {
+  console.log('➡️ Request:', req.method, req.url);
+  next();
+});
 // Static uploads folder (optional, if any files saved physically)
 app.use(
   '/uploads',

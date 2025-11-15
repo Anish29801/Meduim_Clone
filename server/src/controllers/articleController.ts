@@ -8,8 +8,6 @@ import {
   updateArticleStatusService,
 } from '../services/articleService';
 
-import { Bytes } from '@prisma/client/runtime/library';
-
 // multer middleware ke sath
 export const createArticle = async (req: Request, res: Response) => {
   try {
@@ -73,16 +71,7 @@ export const getArticlesByAuthor = async (req: Request, res: Response) => {
 export const getArticles = async (req: Request, res: Response) => {
   try {
     const search = req.query.title?.toString().toLowerCase() || '';
-
-    // if(req.query?.search){
-
-    // }
-    // let whereQuery  =
-    // articles fetch
     const articles = await prisma.article.findMany({
-      // where:{
-      //   title:
-      // },
       include: {
         author: true,
         category: true,
@@ -100,7 +89,7 @@ export const getArticles = async (req: Request, res: Response) => {
         )
       : articles;
 
-    // Image bytes को Base64 में convert करो
+    // Image bytes Base64 convert
     const formatted = filtered.map((a) => ({
       ...a,
       coverImageBase64: a.coverImageBytes
@@ -249,5 +238,66 @@ export const getArticleStatus = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error fetching article:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// GET /api/articles/category/:categoryId
+export const getArticlesByCategory = async (req: Request, res: Response) => {
+  try {
+    const categoryId = parseInt(req.params.categoryId);
+    const articles = await prisma.article.findMany({
+      where: { categoryId },
+      include: {
+        author: true,
+        category: true,
+        tags: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const formatted = articles.map((a) => ({
+      ...a,
+      coverImageBase64: a.coverImageBytes
+        ? `data:image/png;base64,${Buffer.from(a.coverImageBytes).toString(
+            'base64'
+          )}`
+        : null,
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch articles by category' });
+  }
+};
+
+// GET /api/articles/tag/:tagId
+export const getArticlesByTag = async (req: Request, res: Response) => {
+  try {
+    const tagId = parseInt(req.params.tagId);
+
+    const articles = await prisma.article.findMany({
+      where: { tags: { some: { id: tagId } } },
+      include: {
+        author: true,
+        category: true,
+        tags: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const formatted = articles.map((a) => ({
+      ...a,
+      coverImageBase64: a.coverImageBytes
+        ? `data:image/png;base64,${Buffer.from(a.coverImageBytes).toString(
+            'base64'
+          )}`
+        : null,
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch articles by tag' });
   }
 };
